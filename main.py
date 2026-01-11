@@ -4,6 +4,9 @@ import os
 import random
 import json
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # --- 1. OPENROUTER (DEEPSEEK) İLE METİN YAZARLIĞI ---
 def rewrite_with_deepseek(original_text):
