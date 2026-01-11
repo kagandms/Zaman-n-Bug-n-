@@ -141,6 +141,10 @@ def get_smart_event():
         # Tweet Metni
         tweet_text = f"📅 Tarihte Bugün ({day}.{month}.{year})\n\n{ai_text}\n\n#tarih #tarihteneoldu"
         
+        # Eğer AI zaten hashtag eklediyse (ki genellikle ekler), bizimkileri de yanına ekleyip çift satırı silelim.
+        # Basitçe: ai_text'in sonuna boşlukla ekleyelim.
+        tweet_text = f"📅 Tarihte Bugün ({day}.{month}.{year})\n\n{ai_text} #tarih #tarihteneoldu"
+        
         # Görsel Kontrolü
         image_url = None
         if selected_event.get("pages"):
