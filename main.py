@@ -341,13 +341,18 @@ def check_mentions_and_reply(client_v2, my_user_id):
 
 def download_image(url):
     filename = "temp_image.jpg"
+    headers = {
+        'User-Agent': 'TarihBot/3.0 (https://github.com/kagandms/tarihte-bugun-botu; me@example.com)'
+    }
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url, headers=headers, stream=True)
         if response.status_code == 200:
             with open(filename, 'wb') as f:
                 for chunk in response.iter_content(1024):
                     f.write(chunk)
             return filename
+        else:
+            print(f"Resim indirilemedi. Status Code: {response.status_code}")
     except Exception as e:
         print(f"Resim indirme hatası: {e}")
     return None
