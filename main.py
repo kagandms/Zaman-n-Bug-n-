@@ -412,13 +412,13 @@ def main():
     else:
         print("İçerik bulunamadı.")
         
-    # Etkileşim Kontrolü
-    try:
-        me = client_v2.get_me()
-        if me and me.data:
-            check_mentions_and_reply(client_v2, me.data.id)
-    except Exception as e:
-        print(f"Kullanıcı ID hatası: {e}")
+    # Etkileşim Kontrolü (Free Tier API desteği olmadığı için devre dışı)
+    # try:
+    #     me = client_v2.get_me()
+    #     if me and me.data:
+    #         check_mentions_and_reply(client_v2, me.data.id)
+    # except Exception as e:
+    #     print(f"Kullanıcı ID hatası: {e}")
 
 if __name__ == "__main__":
     main()

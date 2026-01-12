@@ -36,7 +36,7 @@ jobs:
         run: |
           git config --global user.name 'TarihBot Otomasyon'
           git config --global user.email 'bot@noreply.github.com'
-          git add last_mention_id.txt history.txt || true
-          git commit -m "chore: update bot state (history & interactions)" || true
+          git add history.txt || true
+          git commit -m "chore: update bot state (history)" || true
           git push
 
