@@ -395,14 +395,61 @@ def main():
                         tweet_params["poll_options"] = poll_options
                         tweet_params["poll_duration_minutes"] = 1440 # 24 saat
 
-                response = client_v2.create_tweet(**tweet_params)
-                last_tweet_id = response.data['id']
-                print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! ID: {last_tweet_id}")
-                sent_successfully = True
-                
-            except Exception as e:
-                print(f"Tweet gönderme hatası (Index {i}): {e}")
-                break 
+                # 1. Deneme: Her şey dahil (Medya + Anket)
+                try:
+                    response = client_v2.create_tweet(**tweet_params)
+                    last_tweet_id = response.data['id']
+                    print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Tam özellikli)")
+                    sent_successfully = True
+                except Exception as e:
+                    print(f"Hata (Tam özellik): {e}")
+                    
+                    # 2. Deneme: Anketsiz (Belki anket kısıtlıdır)
+                    if "poll_options" in tweet_params:
+                        print("Anket çıkartılıp tekrar deneniyor...")
+                        del tweet_params["poll_options"]
+                        if "poll_duration_minutes" in tweet_params:
+                            del tweet_params["poll_duration_minutes"]
+                            
+                        try:
+                            response = client_v2.create_tweet(**tweet_params)
+                            last_tweet_id = response.data['id']
+                            print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Anketsiz)")
+                            sent_successfully = True
+                        except Exception as e2:
+                            print(f"Hata (Anketsiz): {e2}")
+                            
+                            # 3. Deneme: Medyasız (Belki medya kısıtlıdır)
+                            if "media_ids" in tweet_params:
+                                print("Medya çıkartılıp tekrar deneniyor...")
+                                del tweet_params["media_ids"]
+                                
+                                try:
+                                    response = client_v2.create_tweet(**tweet_params)
+                                    last_tweet_id = response.data['id']
+                                    print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Sadece Metin)")
+                                    sent_successfully = True
+                                except Exception as e3:
+                                    print(f"Hata (Sadece Metin): {e3}")
+                                    break # Artık yapacak bir şey yok
+                            else:
+                                break
+                    
+                    # Eğer hata anketten değilse ve medya varsa, medya çıkartmayı dene (Direkt 3. adıma atlama yok, sıralı gidiyoruz)
+                    elif "media_ids" in tweet_params:
+                         print("Medya çıkartılıp tekrar deneniyor...")
+                         del tweet_params["media_ids"]
+                         try:
+                             response = client_v2.create_tweet(**tweet_params)
+                             last_tweet_id = response.data['id']
+                             print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Sadece Metin)")
+                             sent_successfully = True
+                         except Exception as e3:
+                             print(f"Hata (Sadece Metin): {e3}")
+                             break
+                    else:
+                        break # Anket yoktu, medya yoktu, düz metin de gitmedi.
+ 
         
         # Başarıyla atıldıysa geçmişe kaydet
         if sent_successfully and raw_text:
