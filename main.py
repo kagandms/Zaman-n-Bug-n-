@@ -13,7 +13,7 @@ def rewrite_with_deepseek(original_text):
     api_key = os.getenv("OPENROUTER_API_KEY") # GitHub'daki anahtarı alır
     if not api_key:
         print("UYARI: API Key bulunamadı, orijinal metin kullanılacak.")
-        return original_text
+        return original_text, []
 
     # ADRES DEĞİŞTİ: Artık OpenRouter'a gidiyoruz
     url = "https://openrouter.ai/api/v1/chat/completions"
@@ -22,17 +22,21 @@ def rewrite_with_deepseek(original_text):
         "Sen profesyonel bir sosyal medya yöneticisisin. Görevin, sana verilen tarihi olayı "
         "Twitter (X) platformu için viral olacak, merak uyandırıcı ve etkileşim alacak bir formata dönüştürmektir. "
         "\n\nKURALLAR:"
-        "\n1. Cevabın SADECE ve SADECE atılacak tweet metninden oluşmalıdır."
-        "\n2. ASLA 'İşte tweetiniz:', 'Revize edilmiş hali:', 'Öneri:' gibi giriş veya bitiş cümleleri yazma."
-        "\n3. Tırnak işareti (\") içine alma."
-        "\n4. Ansiklopedik dili bırak, samimi ve heyecanlı konuş."
-        "\n5. 1-2 adet emoji kullan."
-        "\n6. Tweetin sonuna takipçileri yorum yapmaya teşvik edecek kısa bir soru ekle."
-        "\n7. Toplam uzunluk hashtagler dahil 240 karakteri geçmesin."
+        "\n1. Cevabın SADECE atılacak tweet metninden oluşmalıdır."
+        "\n2. ASLA 'İşte tweetiniz:', 'Revize edilmiş hali:' gibi giriş veya bitiş cümleleri yazma."
+        "\n3. Ansiklopedik dili bırak, samimi ve heyecanlı konuş."
+        "\n4. 1-2 adet emoji kullan."
+        "\n5. Tweetin en sonuna (yeni satıra geçmeden) takipçilerle etkileşim kuracak 2 veya 3 şıklı bir anket sorusu ekle."
+        "\nFORMAT:"
+        "\n[Tweet Metni]"
+        "\nANKET: [Seçenek 1] | [Seçenek 2] | [Seçenek 3]"
+        "\nÖrnek Çıktı:"
+        "\nFatih Sultan Mehmet İstanbul'u fethetti! 🏰 Peki sizce tarihin en büyük komutanı kim? ⚔️"
+        "\nANKET: Fatih Sultan Mehmet | Büyük İskender | Napolyon"
+        "\n6. Toplam uzunluk hashtagler dahil 240 karakteri geçmesin."
     )
 
     payload = {
-        # MODEL İSMİ DEĞİŞTİ: OpenRouter formatına uygun hale geldi
         "model": "deepseek/deepseek-chat", 
         "messages": [
             {"role": "system", "content": system_prompt},
@@ -44,7 +48,7 @@ def rewrite_with_deepseek(original_text):
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}",
-        "HTTP-Referer": "https://github.com/kagandms/tarihte-bugun-botu", # OpenRouter için gerekli başlıklar
+        "HTTP-Referer": "https://github.com/kagandms/tarihte-bugun-botu",
         "X-Title": "Tarihte Bugun Botu"
     }
 
@@ -53,28 +57,37 @@ def rewrite_with_deepseek(original_text):
         
         if response.status_code != 200:
             print(f"OpenRouter API Hatası: {response.text}")
-            return original_text
+            return original_text, []
             
         result = response.json()
         
-        # OpenRouter bazen farklı yanıt yapısı döndürebilir, kontrol edelim
         if 'choices' in result and len(result['choices']) > 0:
-            new_text = result['choices'][0]['message']['content'].strip()
+            content = result['choices'][0]['message']['content'].strip()
             
-            # Temizlik
-            new_text = new_text.replace('"', '').replace("'", "")
-            if ":" in new_text[:20]: 
-                new_text = new_text.split(":", 1)[1].strip()
-                
-            print("Yapay Zeka metni başarıyla revize etti! 🤖")
-            return new_text
+            # İçerik Temizliği
+            content = content.replace('"', '').replace("'", "")
+            
+            # Anket Ayrıştırma
+            tweet_text = content
+            poll_options = []
+            
+            if "ANKET:" in content:
+                parts = content.split("ANKET:")
+                tweet_text = parts[0].strip()
+                raw_poll = parts[1].strip()
+                poll_options = [opt.strip() for opt in raw_poll.split("|") if opt.strip()]
+                # Limit to 3 options
+                poll_options = poll_options[:3]
+
+            print("Yapay Zeka metni ve anketi başarıyla revize etti! 🤖")
+            return tweet_text, poll_options
         else:
             print("API yanıtı beklendiği gibi değil.")
-            return original_text
+            return original_text, []
             
     except Exception as e:
         print(f"Bağlantı Hatası: {e}")
-        return original_text
+        return original_text, []
 
 # --- 2. TWITTER BAĞLANTILARI ---
 def get_twitter_api_v1():
@@ -97,6 +110,7 @@ def get_twitter_client_v2():
     )
 
 # --- 3. AKILLI VERİ ÇEKME ---
+# --- 3. AKILLI VERİ ÇEKME ---
 def get_smart_event():
     # TR Saati Ayarı
     today = datetime.now() + timedelta(hours=3)
@@ -105,44 +119,80 @@ def get_smart_event():
     
     print(f"Tarih (TR): {day}.{month}")
     
-    url = f"https://tr.wikipedia.org/api/rest_v1/feed/onthisday/events/{month}/{day}"
+    # Tüm kategorilerden veri çekip havuz oluşturacağız
+    categories = ["events", "births", "deaths"]
+    all_important_items = []
+    all_items = []
+    
     headers = {
         'User-Agent': 'TarihBot/3.0 (https://twitter.com/TarihteNeOldu; me@example.com)'
     }
-    
+
     try:
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            return None, None
+        # Her kategori için API çağrısı
+        for cat in categories:
+            url = f"https://tr.wikipedia.org/api/rest_v1/feed/onthisday/{cat}/{month}/{day}"
+            response = requests.get(url, headers=headers)
             
-        data = response.json()
-        events = data.get("events", [])
-        
-        if not events:
-            return None, None
+            if response.status_code == 200:
+                data = response.json()
+                items = data.get(cat, [])
+                if items:
+                    for item in items:
+                        # Kategori bilgisini öğeye ekle (daha sonra emoji için lazım)
+                        item["_category"] = cat
+                        all_items.append(item)
+                        
+                        # Önem Filtresi: Events için 4+, diğerleri için 2+ kaynak
+                        min_pages = 4 if cat == "events" else 2
+                        if len(item.get("pages", [])) >= min_pages:
+                            all_important_items.append(item)
 
-        # Önem Filtresi
-        important_events = [e for e in events if len(e.get("pages", [])) >= 4]
-        
-        if important_events:
-            print(f"Önemli olay bulundu ({len(important_events)} adet).")
-            selected_event = random.choice(important_events)
+        if not all_items:
+            return None, None, []
+
+        # Seçim Yapma
+        if all_important_items:
+            print(f"Toplam {len(all_important_items)} önemli içerik bulundu.")
+            selected_item = random.choice(all_important_items)
         else:
-            print("Önemli olay bulunamadı, rastgele seçiliyor.")
-            selected_event = random.choice(events)
+            print("Önemli içerik bulunamadı, genel havuzdan seçiliyor.")
+            selected_item = random.choice(all_items)
 
-        year = selected_event.get("year")
-        raw_text = selected_event.get("text")
+        # Veri Ayrıştırma
+        category = selected_item.get("_category", "events")
+        year = selected_item.get("year")
+        raw_text = selected_item.get("text")
         
         # --- YAPAY ZEKA DOKUNUŞU ---
-        print(f"Orijinal: {raw_text}")
-        ai_text = rewrite_with_deepseek(raw_text)
+        print(f"Seçilen Kategori: {category} | Orijinal: {raw_text}")
+        ai_text, poll_options = rewrite_with_deepseek(raw_text)
+        
+        # Emoji Seçimi
+        emoji_map = {"events": "📅", "births": "🎂", "deaths": "🕊️"}
+        header_emoji = emoji_map.get(category, "📅")
         
         # Tweet Metni
-        tweet_text = f"📅 Tarihte Bugün ({day}.{month}.{year})\n\n{ai_text}\n\n#tarih #tarihteneoldu"
+        tweet_text = f"{header_emoji} Tarihte Bugün ({day}.{month}.{year})\n\n{ai_text} #tarih #tarihteneoldu"
         
-        # Eğer AI zaten hashtag eklediyse (ki genellikle ekler), bizimkileri de yanına ekleyip çift satırı silelim.
-        # Basitçe: ai_text'in sonuna boşlukla ekleyelim.
+        # Görsel Kontrolü
+        image_url = None
+        if selected_item.get("pages"):
+            first_page = selected_item["pages"][0]
+            if "originalimage" in first_page:
+                image_url = first_page["originalimage"]["source"]
+            elif "thumbnail" in first_page:
+                image_url = first_page["thumbnail"]["source"]
+
+        return tweet_text, image_url, poll_options
+
+    except Exception as e:
+        print(f"Veri çekme hatası: {e}")
+        return None, None, []
+
+    except Exception as e:
+        print(f"Veri çekme hatası: {e}")
+        return None, None
         tweet_text = f"📅 Tarihte Bugün ({day}.{month}.{year})\n\n{ai_text} #tarih #tarihteneoldu"
         
         # Görsel Kontrolü
@@ -178,7 +228,7 @@ def main():
     client_v2 = get_twitter_client_v2()
     
     print("Bot başlatılıyor...")
-    tweet_text, image_url = get_smart_event()
+    tweet_text, image_url, poll_options = get_smart_event()
     
     if tweet_text:
         media_id = None
@@ -195,12 +245,21 @@ def main():
                     print(f"Görsel yüklenemedi: {e}")
         
         try:
+            # Tweet Parametreleri
+            tweet_params = {"text": tweet_text}
+            
             if media_id:
-                client_v2.create_tweet(text=tweet_text, media_ids=[media_id])
-                print("Görselli tweet başarıyla atıldı! 📸")
-            else:
-                client_v2.create_tweet(text=tweet_text)
-                print("Metin tweet başarıyla atıldı! 📝")
+                tweet_params["media_ids"] = [media_id]
+                
+            if poll_options and len(poll_options) >= 2:
+                # Anket varsa ekle (Süre: 24 saat = 1440 dakika)
+                tweet_params["poll_options"] = poll_options
+                tweet_params["poll_duration_minutes"] = 1440
+                print(f"Anket eklendi: {poll_options}")
+
+            client_v2.create_tweet(**tweet_params)
+            print("Tweet başarıyla atıldı! 🚀")
+            
         except Exception as e:
             print(f"Tweet gönderme hatası: {e}")
     else:
