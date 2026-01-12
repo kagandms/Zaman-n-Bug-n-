@@ -121,6 +121,37 @@ def get_twitter_client_v2():
     )
 
 # --- 3. AKILLI VERİ ÇEKME ---
+# --- 2.5 TARİHÇE KONTROLÜ (DUPLICATE PREVENTION) ---
+def get_history():
+    today_str = (datetime.now() + timedelta(hours=3)).strftime("%Y-%m-%d")
+    history_file = "history.txt"
+    
+    if not os.path.exists(history_file):
+        return []
+
+    with open(history_file, "r") as f:
+        lines = f.readlines()
+        
+    if not lines:
+        return []
+        
+    # İlk satır tarih mi?
+    file_date = lines[0].strip()
+    if file_date != today_str:
+        return [] # Tarih değişmiş, hafıza temiz
+        
+    return [l.strip() for l in lines[1:]]
+
+def save_to_history(text):
+    today_str = (datetime.now() + timedelta(hours=3)).strftime("%Y-%m-%d")
+    history = get_history()
+    history.append(text)
+    
+    with open("history.txt", "w") as f:
+        f.write(f"{today_str}\n")
+        for item in history:
+            f.write(f"{item}\n")
+
 # --- 3. AKILLI VERİ ÇEKME ---
 def get_smart_event():
     # TR Saati Ayarı
@@ -129,6 +160,10 @@ def get_smart_event():
     day = today.day
     
     print(f"Tarih (TR): {day}.{month}")
+    
+    # Geçmişi Oku
+    used_events = get_history()
+    print(f"Bugün paylaşılanlar: {len(used_events)} adet")
     
     # Tüm kategorilerden veri çekip havuz oluşturacağız
     categories = ["events", "births", "deaths"]
@@ -150,8 +185,13 @@ def get_smart_event():
                 items = data.get(cat, [])
                 if items:
                     for item in items:
-                        # Kategori bilgisini öğeye ekle (daha sonra emoji için lazım)
+                        # Kategori bilgisini öğeye ekle
                         item["_category"] = cat
+                        
+                        # Çakışma Kontrolü (Text üzerinden)
+                        if item.get("text") in used_events:
+                            continue
+                            
                         all_items.append(item)
                         
                         # Önem Filtresi: Events için 4+, diğerleri için 2+ kaynak
@@ -160,6 +200,7 @@ def get_smart_event():
                             all_important_items.append(item)
 
         if not all_items:
+            print("Uygun (paylaşılmamış) içerik kalmadı!")
             return None, None, []
 
         # Seçim Yapma
@@ -175,8 +216,18 @@ def get_smart_event():
         year = selected_item.get("year")
         raw_text = selected_item.get("text")
         
+        # --- TARİHÇEYE KAYDET (Geçici değil, main'de başarılı olursa kaydedeceğiz ama burada text lazım) ---
+        # Tasarım kararı: get_smart_event sadece seçer. Kaydetme işi main'de tweet atılınca yapılır.
+        # Bu fonksiyon seçilen 'item'ı değil 'raw_text'i döndürüyor. Main raw_text'i de bilmeli mi? 
+        # Hayır, yapay zeka rewrite ediyor.
+        # Biz history'ye 'raw_text'i kaydetmeliyiz ki bir sonraki fetch'te duplicate'i bulabilelim.
+        # O yüzden return değerine raw_text'i de eklemeliyiz.
+        
         # --- YAPAY ZEKA DOKUNUŞU ---
         print(f"Seçilen Kategori: {category} | Orijinal: {raw_text}")
+        tweet_parts, poll_options = rewrite_with_deepseek(raw_text)
+        
+        # Emoji Seçimi
         tweet_parts, poll_options = rewrite_with_deepseek(raw_text)
         
         # Emoji Seçimi
@@ -202,6 +253,8 @@ def get_smart_event():
         
         # Görsel Kontrolü
         image_url = None
+        # Görsel Kontrolü
+        image_url = None
         if selected_item.get("pages"):
             first_page = selected_item["pages"][0]
             if "originalimage" in first_page:
@@ -209,11 +262,11 @@ def get_smart_event():
             elif "thumbnail" in first_page:
                 image_url = first_page["thumbnail"]["source"]
 
-        return final_tweets, image_url, poll_options
+        return final_tweets, image_url, poll_options, raw_text
 
     except Exception as e:
         print(f"Veri çekme hatası: {e}")
-        return [], None, []
+        return [], None, [], None
 
 # --- 4. ETKİLEŞİM (MENTION CEVAPLAMA) ---
 def generate_ai_reply(text):
@@ -300,7 +353,7 @@ def main():
     client_v2 = get_twitter_client_v2()
     
     print("Bot başlatılıyor...")
-    tweet_thread, image_url, poll_options = get_smart_event()
+    tweet_thread, image_url, poll_options, raw_text = get_smart_event()
     
     if tweet_thread:
         last_tweet_id = None
@@ -319,6 +372,7 @@ def main():
                     print(f"Görsel yüklenemedi: {e}")
         
         # Zincir Gönderimi
+        sent_successfully = False
         for i, text in enumerate(tweet_thread):
             try:
                 tweet_params = {"text": text}
@@ -327,24 +381,29 @@ def main():
                 if i == 0 and media_id:
                     tweet_params["media_ids"] = [media_id]
                 
-                # Zincirleme mantığı (önceki tweete yanıt ver)
+                # Zincirleme mantığı
                 if last_tweet_id:
                     tweet_params["in_reply_to_tweet_id"] = last_tweet_id
                 
-                # Son tweet ise ve anket varsa ekle
+                # Son tweet ise anket
                 if i == len(tweet_thread) - 1:
                     if poll_options and len(poll_options) >= 2:
                         tweet_params["poll_options"] = poll_options
-                        tweet_params["poll_duration_minutes"] = 1440
-                        print(f"Anket eklendi: {poll_options}")
+                        tweet_params["poll_duration_minutes"] = 1440 # 24 saat
 
                 response = client_v2.create_tweet(**tweet_params)
                 last_tweet_id = response.data['id']
                 print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! ID: {last_tweet_id}")
+                sent_successfully = True
                 
             except Exception as e:
                 print(f"Tweet gönderme hatası (Index {i}): {e}")
-                break # Zincir koparsa dur
+                break 
+        
+        # Başarıyla atıldıysa geçmişe kaydet
+        if sent_successfully and raw_text:
+            save_to_history(raw_text)
+            print("İçerik geçmişe kaydedildi. ✅")
                 
     else:
         print("İçerik bulunamadı.")

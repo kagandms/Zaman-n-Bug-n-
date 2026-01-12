@@ -4,19 +4,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-print("--- Final v2 Debug ---")
+print("--- Final v2 Debug with History ---")
 
 # 1. Thread & Poll Test
-print("\n--- Testing Thread Generation ---")
-t_thread, i, polls = get_smart_event()
-print(f"Thread Length: {len(t_thread)}")
-for idx, tweet in enumerate(t_thread):
-    print(f"Tweet {idx+1}: {tweet[:50]}...")
+print("\n--- Testing Thread Generation (and History Check) ---")
+# returns final_tweets, image_url, poll_options, raw_text
+t_thread, i, polls, r_text = get_smart_event()
 
-if polls:
-    print(f"Polls: {polls}")
+if t_thread:
+    print(f"Thread Length: {len(t_thread)}")
+    print(f"Raw Text (for history): {r_text[:40]}...")
 else:
-    print("No polls generated.")
+    print("No content selected (possibly empty pool).")
 
 # 2. Interaction AI Test
 print("\n--- Testing Reply AI ---")
