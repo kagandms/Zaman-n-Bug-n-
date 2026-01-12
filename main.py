@@ -435,7 +435,7 @@ def main():
                             else:
                                 break
                     
-                    # Eğer hata anketten değilse ve medya varsa, medya çıkartmayı dene (Direkt 3. adıma atlama yok, sıralı gidiyoruz)
+                    # Eğer hata anketten değilse ve medya varsa, medya çıkartmayı dene
                     elif "media_ids" in tweet_params:
                          print("Medya çıkartılıp tekrar deneniyor...")
                          del tweet_params["media_ids"]
@@ -449,7 +449,6 @@ def main():
                              break
                     else:
                         break # Anket yoktu, medya yoktu, düz metin de gitmedi.
- 
         
         # Başarıyla atıldıysa geçmişe kaydet
         if sent_successfully and raw_text:
@@ -462,8 +461,7 @@ def main():
     # Etkileşim Kontrolü (Free Tier API desteği olmadığı için devre dışı)
     # try:
     #     me = client_v2.get_me()
-    #     if me and me.data:
-    #         check_mentions_and_reply(client_v2, me.data.id)
+    #     # ...
     # except Exception as e:
     #     print(f"Kullanıcı ID hatası: {e}")
 
