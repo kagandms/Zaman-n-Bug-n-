@@ -370,7 +370,8 @@ def main():
             if filename:
                 try:
                     media = api_v1.media_upload(filename)
-                    media_id = media.media_id
+                    media_id = media.media_id_string # String olarak alalım
+                    print(f"Görsel yüklendi! Media ID: {media_id}")
                     os.remove(filename)
                 except Exception as e:
                     print(f"Görsel yüklenemedi: {e}")
@@ -384,6 +385,7 @@ def main():
             # İlk tweet ise görsel ekle
             if i == 0 and media_id:
                 tweet_params["media_ids"] = [media_id]
+                print(f"Tweet parametrelerine visual eklendi: {tweet_params['media_ids']}")
             
             # Zincirleme mantığı
             if last_tweet_id:
