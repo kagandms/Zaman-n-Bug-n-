@@ -378,77 +378,67 @@ def main():
         # Zincir Gönderimi
         sent_successfully = False
         for i, text in enumerate(tweet_thread):
-            try:
-                tweet_params = {"text": text}
-                
-                # İlk tweet ise görsel ekle
-                if i == 0 and media_id:
-                    tweet_params["media_ids"] = [media_id]
-                
-                # Zincirleme mantığı
-                if last_tweet_id:
-                    tweet_params["in_reply_to_tweet_id"] = last_tweet_id
-                
-                # Son tweet ise anket
-                if i == len(tweet_thread) - 1:
-                    if poll_options and len(poll_options) >= 2:
-                        tweet_params["poll_options"] = poll_options
-                        tweet_params["poll_duration_minutes"] = 1440 # 24 saat
+            # Tweet Parametrelerini Hazırla
+            tweet_params = {"text": text}
+            
+            # İlk tweet ise görsel ekle
+            if i == 0 and media_id:
+                tweet_params["media_ids"] = [media_id]
+            
+            # Zincirleme mantığı
+            if last_tweet_id:
+                tweet_params["in_reply_to_tweet_id"] = last_tweet_id
+            
+            # Son tweet ise anket
+            if i == len(tweet_thread) - 1:
+                if poll_options and len(poll_options) >= 2:
+                    tweet_params["poll_options"] = poll_options
+                    tweet_params["poll_duration_minutes"] = 1440
 
-                # 1. Deneme: Her şey dahil (Medya + Anket)
+            # --- GÜVENLİ GÖNDERİM (FALLBACK MEPKANİZMASI) ---
+            # 1. Deneme: Her şey dahil
+            try:
+                response = client_v2.create_tweet(**tweet_params)
+                last_tweet_id = response.data['id']
+                print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Tam)")
+                sent_successfully = True
+                continue # Başarılı, sonraki tweete geç
+            except Exception as e:
+                print(f"Hata (Tam): {e}")
+
+            # 2. Deneme: Anketsiz
+            if "poll_options" in tweet_params:
+                print("Anketsiz deneniyor...")
+                del tweet_params["poll_options"]
+                if "poll_duration_minutes" in tweet_params:
+                    del tweet_params["poll_duration_minutes"]
+                
                 try:
                     response = client_v2.create_tweet(**tweet_params)
                     last_tweet_id = response.data['id']
-                    print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Tam özellikli)")
+                    print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Anketsiz)")
                     sent_successfully = True
+                    continue # Başarılı
                 except Exception as e:
-                    print(f"Hata (Tam özellik): {e}")
-                    
-                    # 2. Deneme: Anketsiz (Belki anket kısıtlıdır)
-                    if "poll_options" in tweet_params:
-                        print("Anket çıkartılıp tekrar deneniyor...")
-                        del tweet_params["poll_options"]
-                        if "poll_duration_minutes" in tweet_params:
-                            del tweet_params["poll_duration_minutes"]
-                            
-                        try:
-                            response = client_v2.create_tweet(**tweet_params)
-                            last_tweet_id = response.data['id']
-                            print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Anketsiz)")
-                            sent_successfully = True
-                        except Exception as e2:
-                            print(f"Hata (Anketsiz): {e2}")
-                            
-                            # 3. Deneme: Medyasız (Belki medya kısıtlıdır)
-                            if "media_ids" in tweet_params:
-                                print("Medya çıkartılıp tekrar deneniyor...")
-                                del tweet_params["media_ids"]
-                                
-                                try:
-                                    response = client_v2.create_tweet(**tweet_params)
-                                    last_tweet_id = response.data['id']
-                                    print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Sadece Metin)")
-                                    sent_successfully = True
-                                except Exception as e3:
-                                    print(f"Hata (Sadece Metin): {e3}")
-                                    break # Artık yapacak bir şey yok
-                            else:
-                                break
-                    
-                    # Eğer hata anketten değilse ve medya varsa, medya çıkartmayı dene
-                    elif "media_ids" in tweet_params:
-                         print("Medya çıkartılıp tekrar deneniyor...")
-                         del tweet_params["media_ids"]
-                         try:
-                             response = client_v2.create_tweet(**tweet_params)
-                             last_tweet_id = response.data['id']
-                             print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Sadece Metin)")
-                             sent_successfully = True
-                         except Exception as e3:
-                             print(f"Hata (Sadece Metin): {e3}")
-                             break
-                    else:
-                        break
+                    print(f"Hata (Anketsiz): {e}")
+
+            # 3. Deneme: Medyasız (Sadece Metin)
+            if "media_ids" in tweet_params:
+                print("Medyasız deneniyor...")
+                del tweet_params["media_ids"]
+                
+                try:
+                    response = client_v2.create_tweet(**tweet_params)
+                    last_tweet_id = response.data['id']
+                    print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Metin)")
+                    sent_successfully = True
+                    continue # Başarılı
+                except Exception as e:
+                    print(f"Hata (Metin): {e}")
+
+            # Buraya geldiyse tüm denemeler başarısız olmuştur
+            print("Tüm denemeler başarısız. Zincir kırıldı.")
+            break
 
         # Başarıyla atıldıysa geçmişe kaydet
         if sent_successfully and raw_text:
