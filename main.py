@@ -26,14 +26,17 @@ def rewrite_with_deepseek(original_text):
         "\n2. ASLA 'İşte tweetiniz:', 'Revize edilmiş hali:' gibi giriş veya bitiş cümleleri yazma."
         "\n3. Ansiklopedik dili bırak, samimi ve heyecanlı konuş."
         "\n4. 1-2 adet emoji kullan."
-        "\n5. Tweetin en sonuna (yeni satıra geçmeden) takipçilerle etkileşim kuracak 2 veya 3 şıklı bir anket sorusu ekle."
+        "\n5. ZİNCİR (FLOOD) KURALI: Eğer konu tek tweete sığmayacak kadar derinse veya anlatılacak çok şey varsa, "
+        "tweetleri '---' (üç tire) işareti ile ayırarak birden fazla parça halinde yaz."
+        "\n6. Sadece ZİNCİRİN EN SON TWEETİNE takipçilerle etkileşim kuracak 2 veya 3 şıklı bir anket sorusu ekle."
         "\nFORMAT:"
-        "\n[Tweet Metni]"
+        "\n[Tweet 1]"
+        "\n---"
+        "\n[Tweet 2]"
+        "\n---"
+        "\n[Tweet 3]"
         "\nANKET: [Seçenek 1] | [Seçenek 2] | [Seçenek 3]"
-        "\nÖrnek Çıktı:"
-        "\nFatih Sultan Mehmet İstanbul'u fethetti! 🏰 Peki sizce tarihin en büyük komutanı kim? ⚔️"
-        "\nANKET: Fatih Sultan Mehmet | Büyük İskender | Napolyon"
-        "\n6. Toplam uzunluk hashtagler dahil 240 karakteri geçmesin."
+        "\n7. Her tweet parçasının uzunluğu (hashtagler dahil) 280 karakteri geçmesin."
     )
 
     payload = {
@@ -57,7 +60,7 @@ def rewrite_with_deepseek(original_text):
         
         if response.status_code != 200:
             print(f"OpenRouter API Hatası: {response.text}")
-            return original_text, []
+            return [original_text], [] # Return list for threads
             
         result = response.json()
         
@@ -67,27 +70,35 @@ def rewrite_with_deepseek(original_text):
             # İçerik Temizliği
             content = content.replace('"', '').replace("'", "")
             
-            # Anket Ayrıştırma
-            tweet_text = content
+            # Anket ve Zincir Ayrıştırma
+            tweet_parts = []
             poll_options = []
             
+            # Önce anketi ayıralım (genelde sonda olur)
             if "ANKET:" in content:
-                parts = content.split("ANKET:")
-                tweet_text = parts[0].strip()
-                raw_poll = parts[1].strip()
+                split_poll = content.split("ANKET:")
+                content_text = split_poll[0].strip()
+                raw_poll = split_poll[1].strip()
                 poll_options = [opt.strip() for opt in raw_poll.split("|") if opt.strip()]
-                # Limit to 3 options
                 poll_options = poll_options[:3]
+            else:
+                content_text = content
+            
+            # Şimdi zinciri ayıralım
+            if "---" in content_text:
+                tweet_parts = [part.strip() for part in content_text.split("---") if part.strip()]
+            else:
+                tweet_parts = [content_text]
 
-            print("Yapay Zeka metni ve anketi başarıyla revize etti! 🤖")
-            return tweet_text, poll_options
+            print(f"Yapay Zeka metni revize etti! ({len(tweet_parts)} parça zincir) 🤖")
+            return tweet_parts, poll_options
         else:
             print("API yanıtı beklendiği gibi değil.")
-            return original_text, []
+            return [original_text], []
             
     except Exception as e:
         print(f"Bağlantı Hatası: {e}")
-        return original_text, []
+        return [original_text], []
 
 # --- 2. TWITTER BAĞLANTILARI ---
 def get_twitter_api_v1():
@@ -166,14 +177,28 @@ def get_smart_event():
         
         # --- YAPAY ZEKA DOKUNUŞU ---
         print(f"Seçilen Kategori: {category} | Orijinal: {raw_text}")
-        ai_text, poll_options = rewrite_with_deepseek(raw_text)
+        tweet_parts, poll_options = rewrite_with_deepseek(raw_text)
         
         # Emoji Seçimi
         emoji_map = {"events": "📅", "births": "🎂", "deaths": "🕊️"}
         header_emoji = emoji_map.get(category, "📅")
         
-        # Tweet Metni
-        tweet_text = f"{header_emoji} Tarihte Bugün ({day}.{month}.{year})\n\n{ai_text} #tarih #tarihteneoldu"
+        final_tweets = []
+        
+        if len(tweet_parts) == 1:
+            # Tek Tweet
+            text = f"{header_emoji} Tarihte Bugün ({day}.{month}.{year})\n\n{tweet_parts[0]} #tarih #tarihteneoldu"
+            final_tweets.append(text)
+        else:
+            # Zincir (Thread)
+            # 1. Tweet: Başlık + İlk Parça + Hashtagler
+            first_tweet = f"{header_emoji} Tarihte Bugün ({day}.{month}.{year})\n\n{tweet_parts[0]} #tarih #tarihteneoldu (1/{len(tweet_parts)})"
+            final_tweets.append(first_tweet)
+            
+            # Diğer Tweetler
+            for idx, part in enumerate(tweet_parts[1:], start=2):
+                next_tweet = f"{part} ({idx}/{len(tweet_parts)})"
+                final_tweets.append(next_tweet)
         
         # Görsel Kontrolü
         image_url = None
@@ -184,31 +209,78 @@ def get_smart_event():
             elif "thumbnail" in first_page:
                 image_url = first_page["thumbnail"]["source"]
 
-        return tweet_text, image_url, poll_options
+        return final_tweets, image_url, poll_options
 
     except Exception as e:
         print(f"Veri çekme hatası: {e}")
-        return None, None, []
+        return [], None, []
 
-    except Exception as e:
-        print(f"Veri çekme hatası: {e}")
-        return None, None
-        tweet_text = f"📅 Tarihte Bugün ({day}.{month}.{year})\n\n{ai_text} #tarih #tarihteneoldu"
+# --- 4. ETKİLEŞİM (MENTION CEVAPLAMA) ---
+def generate_ai_reply(text):
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key: return "Teşekkürler! 🤖"
+    
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    system_prompt = (
+        "Sen samimi bir tarih botusun. Takipçinin mentionuna kısa, nazik ve esprili bir cevap ver. "
+        "Eğer bir tarih sorusuysa kısaca cevapla. Değilse teşekkür et."
+        "Maksimum 2 cümle."
+    )
+    
+    payload = {
+        "model": "deepseek/deepseek-chat",
+        "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": text}],
+    }
+    headers = {"Authorization": f"Bearer {api_key}", "HTTP-Referer": "https://github.com/kagandms", "X-Title": "TarihBot"}
+    
+    try:
+        r = requests.post(url, headers=headers, json=payload)
+        if r.status_code == 200:
+            content = r.json()['choices'][0]['message']['content'].strip()
+            return content.replace('"', '')
+    except:
+        pass
+    return "Teşekkürler! Tarihle kalın. 📜"
+
+def check_mentions_and_reply(client_v2, my_user_id):
+    print("🔔 Etkileşimler kontrol ediliyor...")
+    start_id = None
+    
+    # Son kalınan ID'yi oku
+    if os.path.exists("last_mention_id.txt"):
+        with open("last_mention_id.txt", "r") as f:
+            start_id = f.read().strip()
+            
+    try:
+        # Pagination param
+        params = {"id": my_user_id, "max_results": 10, "tweet_fields": ["id", "text", "author_id"]}
+        if start_id:
+            params["since_id"] = start_id
+            
+        mentions = client_v2.get_users_mentions(**params)
         
-        # Görsel Kontrolü
-        image_url = None
-        if selected_event.get("pages"):
-            first_page = selected_event["pages"][0]
-            if "originalimage" in first_page:
-                image_url = first_page["originalimage"]["source"]
-            elif "thumbnail" in first_page:
-                image_url = first_page["thumbnail"]["source"]
-
-        return tweet_text, image_url
-
+        if mentions.data:
+            new_last_id = start_id
+            for mention in reversed(mentions.data): # Eskiden yeniye
+                print(f"Yanıtlanıyor: {mention.id} - {mention.text}")
+                reply_text = generate_ai_reply(mention.text)
+                
+                try:
+                    client_v2.create_tweet(text=f"@{mention.author_id} {reply_text}", in_reply_to_tweet_id=mention.id)
+                    new_last_id = mention.id
+                    print("Yanıt gönderildi.")
+                except Exception as e:
+                    print(f"Yanıt hatası: {e}")
+            
+            # Yeni ID'yi kaydet
+            if new_last_id:
+                with open("last_mention_id.txt", "w") as f:
+                    f.write(str(new_last_id))
+        else:
+            print("Yeni etkileşim yok.")
+            
     except Exception as e:
-        print(f"Veri çekme hatası: {e}")
-        return None, None
+        print(f"Etkileşim işlem hatası: {e}")
 
 def download_image(url):
     filename = "temp_image.jpg"
@@ -228,11 +300,13 @@ def main():
     client_v2 = get_twitter_client_v2()
     
     print("Bot başlatılıyor...")
-    tweet_text, image_url, poll_options = get_smart_event()
+    tweet_thread, image_url, poll_options = get_smart_event()
     
-    if tweet_text:
-        media_id = None
+    if tweet_thread:
+        last_tweet_id = None
         
+        # Görsel Hazırlığı (Sadece ilk tweet için)
+        media_id = None
         if image_url:
             print(f"Görsel indiriliyor: {image_url}")
             filename = download_image(image_url)
@@ -244,26 +318,44 @@ def main():
                 except Exception as e:
                     print(f"Görsel yüklenemedi: {e}")
         
-        try:
-            # Tweet Parametreleri
-            tweet_params = {"text": tweet_text}
-            
-            if media_id:
-                tweet_params["media_ids"] = [media_id]
+        # Zincir Gönderimi
+        for i, text in enumerate(tweet_thread):
+            try:
+                tweet_params = {"text": text}
                 
-            if poll_options and len(poll_options) >= 2:
-                # Anket varsa ekle (Süre: 24 saat = 1440 dakika)
-                tweet_params["poll_options"] = poll_options
-                tweet_params["poll_duration_minutes"] = 1440
-                print(f"Anket eklendi: {poll_options}")
+                # İlk tweet ise görsel ekle
+                if i == 0 and media_id:
+                    tweet_params["media_ids"] = [media_id]
+                
+                # Zincirleme mantığı (önceki tweete yanıt ver)
+                if last_tweet_id:
+                    tweet_params["in_reply_to_tweet_id"] = last_tweet_id
+                
+                # Son tweet ise ve anket varsa ekle
+                if i == len(tweet_thread) - 1:
+                    if poll_options and len(poll_options) >= 2:
+                        tweet_params["poll_options"] = poll_options
+                        tweet_params["poll_duration_minutes"] = 1440
+                        print(f"Anket eklendi: {poll_options}")
 
-            client_v2.create_tweet(**tweet_params)
-            print("Tweet başarıyla atıldı! 🚀")
-            
-        except Exception as e:
-            print(f"Tweet gönderme hatası: {e}")
+                response = client_v2.create_tweet(**tweet_params)
+                last_tweet_id = response.data['id']
+                print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! ID: {last_tweet_id}")
+                
+            except Exception as e:
+                print(f"Tweet gönderme hatası (Index {i}): {e}")
+                break # Zincir koparsa dur
+                
     else:
         print("İçerik bulunamadı.")
+        
+    # Etkileşim Kontrolü
+    try:
+        me = client_v2.get_me()
+        if me and me.data:
+            check_mentions_and_reply(client_v2, me.data.id)
+    except Exception as e:
+        print(f"Kullanıcı ID hatası: {e}")
 
 if __name__ == "__main__":
     main()

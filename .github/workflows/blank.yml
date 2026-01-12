@@ -28,3 +28,12 @@ jobs:
           ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: python main.py
+
+      - name: Degisiklikleri Kaydet
+        run: |
+          git config --global user.name 'TarihBot Otomasyon'
+          git config --global user.email 'bot@noreply.github.com'
+          git add last_mention_id.txt || true
+          git commit -m "chore: update interaction state" || true
+          git push
+
