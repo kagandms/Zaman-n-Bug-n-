@@ -4,20 +4,27 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-print("--- Final v2 Debug with History ---")
+print("--- Final v3 Debug (Images) ---")
 
-# 1. Thread & Poll Test
-print("\n--- Testing Thread Generation (and History Check) ---")
+# 1. Full Flow Test
+print("\n--- Testing Content & Image Gen ---")
 # returns final_tweets, image_url, poll_options, raw_text
-t_thread, i, polls, r_text = get_smart_event()
+t_thread, i_url, polls, r_text = get_smart_event()
 
+print(f"\nRaw Text: {r_text[:50]}...")
 if t_thread:
-    print(f"Thread Length: {len(t_thread)}")
-    print(f"Raw Text (for history): {r_text[:40]}...")
+    print(f"Tweet Count: {len(t_thread)}")
+    print(f"Tweet 1: {t_thread[0][:50]}...")
 else:
-    print("No content selected (possibly empty pool).")
+    print("No tweets generated.")
 
-# 2. Interaction AI Test
-print("\n--- Testing Reply AI ---")
-reply = generate_ai_reply("Harika bir bilgi, teşekkürler! Ankara Savaşı hakkında ne düşünüyorsun?")
-print(f"AI Reply: {reply}")
+print(f"\nImage URL: {i_url}")
+if "pollinations.ai" in str(i_url):
+    print("✅ SUCCESS: AI generated image URL used.")
+elif "wikipedia" in str(i_url):
+    print("✅ SUCCESS: Wikipedia image URL used.")
+else:
+    print("⚠️ WARNING: No image URL found.")
+
+if polls:
+    print(f"Polls: {polls}")

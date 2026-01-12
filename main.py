@@ -29,14 +29,14 @@ def rewrite_with_deepseek(original_text):
         "\n5. ZİNCİR (FLOOD) KURALI: Eğer konu tek tweete sığmayacak kadar derinse veya anlatılacak çok şey varsa, "
         "tweetleri '---' (üç tire) işareti ile ayırarak birden fazla parça halinde yaz."
         "\n6. Sadece ZİNCİRİN EN SON TWEETİNE takipçilerle etkileşim kuracak 2 veya 3 şıklı bir anket sorusu ekle."
+        "\n7. GÖRSEL PROMPT: En sona (metinden tamamen ayrı) bu olayı betimleyen, yapay zeka resim çizim aracı için İngilizce bir prompt yaz."
         "\nFORMAT:"
         "\n[Tweet 1]"
         "\n---"
         "\n[Tweet 2]"
-        "\n---"
-        "\n[Tweet 3]"
-        "\nANKET: [Seçenek 1] | [Seçenek 2] | [Seçenek 3]"
-        "\n7. Her tweet parçasının uzunluğu (hashtagler dahil) 280 karakteri geçmesin."
+        "\nANKET: [Seçenek 1] | [Seçenek 2]"
+        "\nGORSEL_PROMPT: [English Image Description]"
+        "\n8. Her tweet parçasının uzunluğu (hashtagler dahil) 280 karakteri geçmesin."
     )
 
     payload = {
@@ -60,7 +60,7 @@ def rewrite_with_deepseek(original_text):
         
         if response.status_code != 200:
             print(f"OpenRouter API Hatası: {response.text}")
-            return [original_text], [] # Return list for threads
+            return [original_text], [], None
             
         result = response.json()
         
@@ -70,11 +70,18 @@ def rewrite_with_deepseek(original_text):
             # İçerik Temizliği
             content = content.replace('"', '').replace("'", "")
             
-            # Anket ve Zincir Ayrıştırma
+            # Değişkenler
             tweet_parts = []
             poll_options = []
+            image_prompt = None
             
-            # Önce anketi ayıralım (genelde sonda olur)
+            # 1. Görsel Prompt Ayrıştırma
+            if "GORSEL_PROMPT:" in content:
+                parts = content.split("GORSEL_PROMPT:")
+                content = parts[0].strip() # Tweet kısmı
+                image_prompt = parts[1].strip()
+            
+            # 2. Anket Ayrıştırma
             if "ANKET:" in content:
                 split_poll = content.split("ANKET:")
                 content_text = split_poll[0].strip()
@@ -84,21 +91,21 @@ def rewrite_with_deepseek(original_text):
             else:
                 content_text = content
             
-            # Şimdi zinciri ayıralım
+            # 3. Zincir Ayrıştırma
             if "---" in content_text:
                 tweet_parts = [part.strip() for part in content_text.split("---") if part.strip()]
             else:
                 tweet_parts = [content_text]
 
             print(f"Yapay Zeka metni revize etti! ({len(tweet_parts)} parça zincir) 🤖")
-            return tweet_parts, poll_options
+            return tweet_parts, poll_options, image_prompt
         else:
             print("API yanıtı beklendiği gibi değil.")
-            return [original_text], []
+            return [original_text], [], None
             
     except Exception as e:
         print(f"Bağlantı Hatası: {e}")
-        return [original_text], []
+        return [original_text], [], None
 
 # --- 2. TWITTER BAĞLANTILARI ---
 def get_twitter_api_v1():
@@ -225,10 +232,7 @@ def get_smart_event():
         
         # --- YAPAY ZEKA DOKUNUŞU ---
         print(f"Seçilen Kategori: {category} | Orijinal: {raw_text}")
-        tweet_parts, poll_options = rewrite_with_deepseek(raw_text)
-        
-        # Emoji Seçimi
-        tweet_parts, poll_options = rewrite_with_deepseek(raw_text)
+        tweet_parts, poll_options, image_prompt = rewrite_with_deepseek(raw_text)
         
         # Emoji Seçimi
         emoji_map = {"events": "📅", "births": "🎂", "deaths": "🕊️"}
