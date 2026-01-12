@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: '0 6,10,14,18 * * *'
 
+permissions:
+  contents: write
+
 jobs:
   calistir:
     runs-on: ubuntu-latest
