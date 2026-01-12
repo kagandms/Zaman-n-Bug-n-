@@ -4,6 +4,7 @@ import requests
 import os
 import random
 import json
+import mimetypes
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
@@ -297,13 +298,31 @@ def check_mentions_and_reply(client, api_v1):
      pass
 
 def download_image(url):
-    filename = "temp_image.jpg"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     try:
         response = requests.get(url, headers=headers, stream=True)
         if response.status_code == 200:
+            content_type = response.headers.get('Content-Type')
+            extension = mimetypes.guess_extension(content_type)
+            if not extension:
+                # Fallback for common types if mimetypes fails
+                if 'jpeg' in content_type or 'jpg' in content_type:
+                    extension = '.jpg'
+                elif 'png' in content_type:
+                    extension = '.png'
+                elif 'webp' in content_type:
+                    extension = '.webp'
+                else:
+                    extension = '.jpg' # Default fallback
+            
+            # Ensure extension exists
+            if not extension: 
+                extension = ".jpg"
+
+            filename = f"temp_image{extension}"
+            
             with open(filename, 'wb') as f:
                 for chunk in response.iter_content(1024):
                     f.write(chunk)
@@ -331,12 +350,16 @@ def main():
             filename = download_image(image_url)
             if filename:
                 try:
-                    media = api_v1.media_upload(filename)
-                    media_id = media.media_id_string # String olarak alalım
-                    print(f"Görsel yüklendi! Media ID: {media_id}")
-                    os.remove(filename)
-                except Exception as e:
-                    print(f"Görsel yüklenemedi: {e}")
+                    try:
+                        media = api_v1.media_upload(filename)
+                        media_id = media.media_id_string # String olarak alalım
+                        print(f"Görsel yüklendi! Media ID: {media_id}")
+                    except Exception as e:
+                        print(f"Görsel yüklenemedi: {e}")
+                finally:
+                    if os.path.exists(filename):
+                        os.remove(filename)
+                        print(f"Geçici görsel silindi: {filename}")
         
         # Zincir Gönderimi
         sent_successfully = False
