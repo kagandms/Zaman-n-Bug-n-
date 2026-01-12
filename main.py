@@ -9,41 +9,42 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- 1. OPENROUTER (DEEPSEEK) İLE METİN YAZARLIĞI ---
-def rewrite_with_deepseek(original_text):
+def rewrite_with_deepseek(original_text, year=None):
     api_key = os.getenv("OPENROUTER_API_KEY") # GitHub'daki anahtarı alır
     if not api_key:
         print("UYARI: API Key bulunamadı, orijinal metin kullanılacak.")
-        return original_text, []
+        return [original_text], [], None
 
     # ADRES DEĞİŞTİ: Artık OpenRouter'a gidiyoruz
     url = "https://openrouter.ai/api/v1/chat/completions"
+
+    year_context = f" ({year} yılında gerçekleşti)" if year else ""
     
     system_prompt = (
-        "Sen profesyonel bir sosyal medya yöneticisisin. Görevin, sana verilen tarihi olayı "
-        "Twitter (X) platformu için viral olacak, merak uyandırıcı ve etkileşim alacak bir formata dönüştürmektir. "
-        "\n\nKURALLAR:"
-        "\n1. Cevabın SADECE atılacak tweet metninden oluşmalıdır."
-        "\n2. ASLA 'İşte tweetiniz:', 'Revize edilmiş hali:' gibi giriş veya bitiş cümleleri yazma."
-        "\n3. Ansiklopedik dili bırak, samimi ve heyecanlı konuş."
-        "\n4. 1-2 adet emoji kullan."
-        "\n5. ZİNCİR (FLOOD) KURALI: Eğer konu tek tweete sığmayacak kadar derinse veya anlatılacak çok şey varsa, "
-        "tweetleri '---' (üç tire) işareti ile ayırarak birden fazla parça halinde yaz."
-        "\n6. Sadece ZİNCİRİN EN SON TWEETİNE takipçilerle etkileşim kuracak 2 veya 3 şıklı bir anket sorusu ekle."
-        "\n7. GÖRSEL PROMPT: En sona (metinden tamamen ayrı) bu olayı betimleyen, yapay zeka resim çizim aracı için İngilizce bir prompt yaz."
-        "\nFORMAT:"
-        "\n[Tweet 1]"
+        "Sen profesyonel bir tarihçi ve sosyal medya yöneticisisin. Görevin, sana verilen tarihi olayı "
+        "Twitter (X) platformu için EKSİKSİZ, DOĞRU ve İLGİ ÇEKİCİ bir formata dönüştürmektir."
+        "\n\nÖNEMLİ KURALLAR:"
+        "\n1. DİL BİLGİSİ: Türkçe yazım ve noktalama kurallarına %100 uy. Asla düşük cümle kurma."
+        "\n2. DOĞRULUK: Olayın tarihsel bağlamına sadık kal. Metinde verilen olay ile sana verilen yılın ({year}) tutarlı olduğundan emin ol."
+        "\n3. ÜSLUP: Ansiklopedik sıkıcılıktan uzaklaş, hikayeleştirici ve merak uyandırıcı bir dil kullan."
+        "\n4. EMOJİ: 1-2 adet uygun emoji kullan."
+        "\n5. ZİNCİR (FLOOD) KURALI: Eğer konu uzunsa veya ANKET SORACAKSAN, tweetleri '---' ile ayır."
+        "\n6. ANKET KURALI (KRİTİK): Anketi ASLA ana tweete ekleme. Anketi, ana tweetin altına 'cevap' (reply) olarak gelecek şekilde AYRI bir tweet parçası olarak en sona ekle."
+        "\n7. GÖRSEL PROMPT: En sona İngilizce görsel promptunu yaz."
+        "\n8. SAKINCA: Halüsinasyon görme."
+        "\n\nFORMAT:"
+        "\n[Ana Tweet]"
         "\n---"
-        "\n[Tweet 2]"
+        "\n[Anket Sorusu / Etkileşim Tweeti]"
         "\nANKET: [Seçenek 1] | [Seçenek 2]"
-        "\nGORSEL_PROMPT: [English Image Description]"
-        "\n8. Her tweet parçasının uzunluğu (hashtagler dahil) 280 karakteri geçmesin."
+        "\nGORSEL_PROMPT: [Detailed English Image Prompt]"
     )
 
     payload = {
         "model": "deepseek/deepseek-chat", 
         "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Metin: {original_text}"}
+            {"role": "system", "content": system_prompt.replace("{year}", str(year) if year else "Belirtilmemiş")},
+            {"role": "user", "content": f"Olay: {original_text}{year_context}\nLütfen viral olacak şekilde revize et."}
         ],
         "stream": False
     }
