@@ -358,6 +358,19 @@ def main():
     client_v2 = get_twitter_client_v2()
     
     print("Bot başlatılıyor...")
+
+    # --- DEBUG: Kimlik Doğrulama Kontrolü ---
+    try:
+        user = api_v1.verify_credentials()
+        print(f"✅ Giriş Başarılı: {user.screen_name}")
+        # Not: tweepy API v1.1 objesinde 'access_level' özelliği olmayabilir, ama testi geçmesi bile önemli.
+        # Manuel kontrol için hata verirse göreceğiz.
+    except Exception as e:
+        print(f"❌ KİMLİK DOĞRULAMA HATASI: {e}")
+        print("Lütfen API Key, Secret ve Access Token'larınızı kontrol edin.")
+        return
+    # -------------------------------------------
+
     tweet_thread, image_url, poll_options, raw_text = get_smart_event()
     
     if tweet_thread:
