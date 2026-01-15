@@ -73,7 +73,9 @@ def rewrite_with_deepseek(original_text, year=None):
         response = requests.post(url, headers=headers, json=payload)
         
         if response.status_code != 200:
-            print(f"OpenRouter API Hatası: {response.text}")
+            print(f"⚠️ OpenRouter API Hatası ({response.status_code}): {response.text}")
+            if response.status_code == 401:
+                 print("❗ HATA: API Key geçersiz veya bakiye yetersiz. Lütfen OPENROUTER_API_KEY secret'ını kontrol edin.")
             return [original_text], [], None
             
         result = response.json()
@@ -445,7 +447,21 @@ def main():
                 break
 
             except Exception as e:
-                print(f"Hata (Tam): {e}")
+                error_str = str(e)
+                print(f"❌ Tweet Gönderim Hatası (Tam): {error_str}")
+                
+                if "403 Forbidden" in error_str:
+                    print("🚨 403 FORBIDDEN DETAYLARI:")
+                    if "usage of this app is suspended" in error_str.lower():
+                        print("👉 Uygulama askıya alınmış (Suspended). Twitter Developer Portal'ı kontrol edin.")
+                    elif "must be enrolled" in error_str.lower():
+                        print("👉 Temel (Basic) Tier üyeliği gerekli. Free Tier sadece write-only olabilir veya limit dolmuş.")
+                    elif "duplicate" in error_str.lower():
+                        print("👉 DUPLICATE CONTENT: Bu tweet daha önce atılmış.")
+                    else:
+                        print("👉 İzin sorunu. App yetkilerinin 'Read and Write' olduğundan emin olun.")
+                elif "401 Unauthorized" in error_str:
+                    print("👉 Yetkilendirme Hatası. Key/Token değerlerini kontrol edin.")
 
             # 2. Deneme: Anketsiz
             if "poll_options" in tweet_params:
