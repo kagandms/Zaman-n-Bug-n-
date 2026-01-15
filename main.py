@@ -460,6 +460,15 @@ def main():
                         print("👉 DUPLICATE CONTENT: Bu tweet daha önce atılmış.")
                     else:
                         print("👉 İzin sorunu. App yetkilerinin 'Read and Write' olduğundan emin olun.")
+                        print("💡 İPUCU: İzinleri değiştirdiyseniz, DEVELOPER PORTAL'da 'Regenerate' diyerek yeni Access Token/Secret almanız ŞARTTIR.")
+                    
+                    # RAW ERROR LOGGING
+                    if hasattr(e, 'response') and e.response is not None:
+                        print("--- RAW API ERROR RESPONSE ---")
+                        print(f"Status Code: {e.response.status_code}")
+                        print(f"Headers: {e.response.headers}")
+                        print(f"Body: {e.response.text}")
+                        print("------------------------------")
                 elif "401 Unauthorized" in error_str:
                     print("👉 Yetkilendirme Hatası. Key/Token değerlerini kontrol edin.")
 
