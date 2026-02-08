@@ -176,6 +176,52 @@ def save_to_history(text):
             f.write(f"{item}\n")
 
 # --- 3. AKILLI VERİ ÇEKME ---
+
+# Türkiye ve Türklerle ilgili anahtar kelimeler
+TURKISH_KEYWORDS = [
+    # Ülke ve şehirler
+    "türk", "türkiye", "osmanlı", "ottoman", "turkey", "turkish",
+    "istanbul", "ankara", "izmir", "bursa", "antalya", "konya", "adana",
+    "trabzon", "edirne", "sivas", "erzurum", "diyarbakır", "gaziantep",
+    "konstantinopolis", "constantinople", "bizans", "byzantine",
+    # Tarihi terimler
+    "sultan", "padişah", "sadrazam", "vezir", "paşa", "bey", "han",
+    "selçuklu", "seljuk", "göktürk", "hunlar", "anadolu", "anatolia",
+    "boğaz", "bosphorus", "çanakkale", "gallipoli", "sakarya", "dumlupınar",
+    # Önemli kişiler (soyadları)
+    "atatürk", "mustafa kemal", "fatih", "kanuni", "süleyman", "mehmed",
+    "abdülhamid", "enver", "talat", "cemal", "ismet", "inönü",
+    # Kurumlar ve kavramlar  
+    "tbmm", "meclis", "cumhuriyet", "republic of turkey",
+    "kıbrıs", "cyprus", "ege", "aegean", "karadeniz", "black sea",
+    "marmara", "akdeniz", "mediterranean",
+    # Spor ve kültür
+    "galatasaray", "fenerbahçe", "beşiktaş", "trabzonspor",
+    "türk lirası", "borsa istanbul", "bist"
+]
+
+def is_turkish_related(item):
+    """Bir olayın Türkiye/Türklerle ilgili olup olmadığını kontrol eder."""
+    # Ana metni kontrol et
+    text = item.get("text", "").lower()
+    for keyword in TURKISH_KEYWORDS:
+        if keyword.lower() in text:
+            return True
+    
+    # Wikipedia sayfalarının başlıklarını kontrol et
+    pages = item.get("pages", [])
+    for page in pages:
+        title = page.get("title", "").lower()
+        description = page.get("description", "").lower()
+        extract = page.get("extract", "").lower()
+        
+        for keyword in TURKISH_KEYWORDS:
+            kw_lower = keyword.lower()
+            if kw_lower in title or kw_lower in description or kw_lower in extract:
+                return True
+    
+    return False
+
 def get_smart_event():
     # TR Saati Ayarı
     today = datetime.now() + timedelta(hours=3)
@@ -191,6 +237,7 @@ def get_smart_event():
     # Tüm kategorilerden veri çekip havuz oluşturacağız
     # 'selected' kategorisi en bilinen olayları içerir
     categories = ["selected", "events", "births", "deaths"]
+    all_turkish_items = []  # Türkiye ile ilgili olaylar (EN YÜKSEK ÖNCELİK)
     all_important_items = []
     all_items = []
     
@@ -224,6 +271,11 @@ def get_smart_event():
                            
                         all_items.append(item)
                         
+                        # 🇹🇷 TÜRKİYE FİLTRESİ - En yüksek öncelik
+                        if is_turkish_related(item):
+                            all_turkish_items.append(item)
+                            print(f"🇹🇷 Türkiye ile ilgili olay bulundu: {item.get('text', '')[:50]}...")
+                        
                         # Önem Filtresi: Events için 4+, diğerleri için 2+ kaynak
                         min_pages = 4 if cat == "events" else 2
                         
@@ -235,11 +287,16 @@ def get_smart_event():
             print("Uygun (paylaşılmamış) içerik kalmadı!")
             return None, None, [], None
 
-        # Seçim Yapma
-        # Önce önemli items arasından seç
-        if all_important_items:
-            print(f"Toplam {len(all_important_items)} önemli içerik bulundu.")
-            # Priority'ye göre ağırlıklı seçim yapılabilir ama şimdilik random
+        # Seçim Yapma - Öncelik Sırası:
+        # 1. Türkiye ile ilgili olaylar (EN YÜKSEK)
+        # 2. Önemli olaylar
+        # 3. Genel havuz
+        
+        if all_turkish_items:
+            print(f"🇹🇷 Toplam {len(all_turkish_items)} Türkiye ile ilgili içerik bulundu!")
+            selected_item = random.choice(all_turkish_items)
+        elif all_important_items:
+            print(f"Türkiye ile ilgili içerik bulunamadı. {len(all_important_items)} önemli içerikten seçiliyor.")
             selected_item = random.choice(all_important_items)
         else:
             print("Önemli içerik bulunamadı, genel havuzdan seçiliyor.")
