@@ -3,29 +3,31 @@ from tweepy.errors import TooManyRequests
 import requests
 import os
 import random
-import json
+import re
 import mimetypes
-from datetime import datetime, timedelta
+import unicodedata
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
+
+# --- GLOBAL CONSTANTS ---
+TURKEY_TZ = ZoneInfo("Europe/Istanbul")
+MAX_TWEET_LENGTH = 280
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 
 load_dotenv()
 
 # --- 1. OPENROUTER (DEEPSEEK) İLE METİN YAZARLIĞI ---
 def rewrite_with_deepseek(original_text, year=None):
-    api_key = os.getenv("OPENROUTER_API_KEY") # GitHub'daki anahtarı alır
+    api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        print("UYARI: API Key bulunamadı (Environment Variable boş), orijinal metin kullanılacak.")
+        print("UYARI: API Key bulunamadı, orijinal metin kullanılacak.")
         return [original_text], [], None
     
-    # DEBUG: Key kontrolü (Güvenli)
-    print(f"DEBUG: OpenRouter Key yüklendi. Uzunluk: {len(api_key)}")
-    print(f"DEBUG: Key Başlangıcı: {api_key[:5]}...")
-    if api_key.strip() != api_key:
-       print("UYARI: Key içinde boşluk karakterleri tespit edildi! Temizleniyor...")
-       api_key = api_key.strip()
+    # Key temizliği (boşluk varsa)
+    api_key = api_key.strip()
+    print("✅ OpenRouter API Key mevcut.")
 
-
-    # ADRES DEĞİŞTİ: Artık OpenRouter'a gidiyoruz
     url = "https://openrouter.ai/api/v1/chat/completions"
     
     year_context = f" ({year} yılında gerçekleşti)" if year else ""
@@ -33,24 +35,27 @@ def rewrite_with_deepseek(original_text, year=None):
     system_prompt = (
         "Sen profesyonel bir tarihçi, editör ve sosyal medya uzmanısın. Görevin, sana verilen tarihi olayı "
         "Twitter (X) platformu için EKSİKSİZ, DOĞRU ve ÇOK İLGİ ÇEKİCİ bir formata dönüştürmektir."
+        "\n\n⚠️ KRİTİK KARAKTER LİMİTİ:"
+        "\n- Her tweet MUTLAKA 200 karakterden KISA olmalı (başlık ve hashtagler için yer bırak)."
+        "\n- 200 karakteri aşan tweetler REDDEDİLİR. Kısa, öz ve vurucu yaz."
         "\n\nGENEL İÇERİK POLİTİKASI:"
-        "\n- Sadece savaşları değil; BİLİM, SANAT, FUTBOL, FİNANS, EKONOMİ ve SİYASET tarihinden olayları da aynı heyecanla anlat."
-        "\n- Olayın popülerliğini ve bilindikligini göz önünde bulundurarak takipçilerin ilgisini çekecek detayları öne çıkar."
+        "\n- Sadece savaşları değil; BİLİM, SANAT, FUTBOL, FİNANS, EKONOMİ ve SİYASET tarihini de anlat."
+        "\n- Takipçilerin ilgisini çekecek detayları öne çıkar."
         "\n\nKESİN KURALLAR:"
-        "\n1. DİL ve GRAMER: Türkçe yazım ve noktalama kurallarına %100 uy. Asla devrik veya düşük cümle kurma. Harf hatası yapma."
-        "\n2. TARİHSEL DOĞRULUK: Olayın yılını ve bağlamını asla karıştırma. Sana verilen metindeki yıl ile anlattığın olayın yılı tutarlı olsun."
-        "\n3. ÜSLUP: Ansiklopedik dilden kaçın. Hikayeleştirici, merak uyandırıcı ve samimi bir dil kullan."
-        "\n4. EMOJİ: Anlatımı güçlendirecek 1-2 emoji kullan (aşırıya kaçma)."
-        "\n5. ZİNCİR (FLOOD): Konu derin ve detaylıysa, LÜTFEN tweetleri '---' işareti ile bölerek zincir (thread) yap. Tek bir uzun tweet yerine akıcı bir hikaye anlat."
-        "\n6. ANKET: Sadece zincirin en sonunda, konuyla ilgili etkileşim artırıcı zekice bir anket sorusu sor."
-        "\n7. GÖRSEL PROMPT: En sona, olayı en iyi betimleyen İngilizce görsel promptunu yaz."
-        "\n8. SAKINCA: Halüsinasyon görme. Metinde olmayan bilgiyi varmış gibi anlatma."
+        "\n1. DİL ve GRAMER: Türkçe yazım kurallarına %100 uy."
+        "\n2. TARİHSEL DOĞRULUK: Yılı asla karıştırma."
+        "\n3. ÜSLUP: Hikayeleştirici ve samimi yaz."
+        "\n4. EMOJİ: 1-2 emoji kullan."
+        "\n5. ZİNCİR: Konu derinse '---' ile böl. Her parça MAX 200 karakter!"
+        "\n6. ANKET: Zincir sonunda akıllı bir anket sor."
+        "\n7. GÖRSEL PROMPT: En sona İngilizce görsel promptu yaz."
+        "\n8. HALÜSINASYON: Metinde olmayan bilgiyi ekleme."
         "\n\nFORMAT:"
-        "\n[Tweet 1 Metni]"
+        "\n[Tweet 1 - max 200 karakter]"
         "\n---"
-        "\n[Tweet 2 Metni...]"
-        "\nANKET: [Soru] | [Seçenek 1] | [Seçenek 2]"
-        "\nGORSEL_PROMPT: [Detailed English Image Prompt]"
+        "\n[Tweet 2 - max 200 karakter]"
+        "\nANKET: [Soru] | [Seçenek 1] | [Seçenek 2] | [Seçenek 3]"
+        "\nGORSEL_PROMPT: [English Image Prompt]"
     )
 
     payload = {
@@ -103,7 +108,7 @@ def rewrite_with_deepseek(original_text, year=None):
                 content_text = split_poll[0].strip()
                 raw_poll = split_poll[1].strip()
                 poll_options = [opt.strip() for opt in raw_poll.split("|") if opt.strip()]
-                poll_options = poll_options[:3]
+                poll_options = poll_options[:4]  # Twitter max 4 seçenek destekler
             else:
                 content_text = content
             
@@ -112,6 +117,14 @@ def rewrite_with_deepseek(original_text, year=None):
                 tweet_parts = [part.strip() for part in content_text.split("---") if part.strip()]
             else:
                 tweet_parts = [content_text]
+            
+            # 4. Tweet Uzunluk Kontrolü ve Kırpma
+            validated_parts = []
+            for part in tweet_parts:
+                if len(part) > MAX_TWEET_LENGTH - 80:  # Header ve hashtagler için yer bırak
+                    part = part[:MAX_TWEET_LENGTH - 83] + "..."
+                validated_parts.append(part)
+            tweet_parts = validated_parts
 
             print(f"Yapay Zeka metni revize etti! ({len(tweet_parts)} parça zincir) 🤖")
             return tweet_parts, poll_options, image_prompt
@@ -143,17 +156,23 @@ def get_twitter_client_v2():
         access_token_secret=os.getenv("ACCESS_TOKEN_SECRET")
     )
 
-# --- 3. AKILLI VERİ ÇEKME ---
 # --- 2.5 TARİHÇE KONTROLÜ (DUPLICATE PREVENTION) ---
+def get_turkey_now():
+    """Türkiye saatini döndürür (yaz/kış otomatik)."""
+    return datetime.now(TURKEY_TZ)
+
 def get_history():
-    today_str = (datetime.now() + timedelta(hours=3)).strftime("%Y-%m-%d")
+    today_str = get_turkey_now().strftime("%Y-%m-%d")
     history_file = "history.txt"
     
     if not os.path.exists(history_file):
         return []
 
-    with open(history_file, "r") as f:
-        lines = f.readlines()
+    try:
+        with open(history_file, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    except Exception:
+        return []
         
     if not lines:
         return []
@@ -161,21 +180,27 @@ def get_history():
     # İlk satır tarih mi?
     file_date = lines[0].strip()
     if file_date != today_str:
-        return [] # Tarih değişmiş, hafıza temiz
+        return []  # Tarih değişmiş, hafıza temiz
         
     return [l.strip() for l in lines[1:]]
 
 def save_to_history(text):
-    today_str = (datetime.now() + timedelta(hours=3)).strftime("%Y-%m-%d")
+    today_str = get_turkey_now().strftime("%Y-%m-%d")
     history = get_history()
     history.append(text)
     
-    with open("history.txt", "w") as f:
+    with open("history.txt", "w", encoding="utf-8") as f:
         f.write(f"{today_str}\n")
         for item in history:
             f.write(f"{item}\n")
 
 # --- 3. AKILLI VERİ ÇEKME ---
+
+def turkish_lower(s):
+    """Türkçe karakterleri doğru şekilde küçük harfe çevirir (İ→i, I→ı)."""
+    s = unicodedata.normalize('NFKC', s)
+    s = s.replace('İ', 'i').replace('I', 'ı')
+    return s.lower()
 
 # Türkiye ve Türklerle ilgili anahtar kelimeler
 TURKISH_KEYWORDS = [
@@ -200,31 +225,25 @@ TURKISH_KEYWORDS = [
     "türk lirası", "borsa istanbul", "bist"
 ]
 
+# Regex pattern'i önceden derle (performans için)
+TURKISH_PATTERN = re.compile('|'.join(map(re.escape, TURKISH_KEYWORDS)), re.IGNORECASE)
+
 def is_turkish_related(item):
     """Bir olayın Türkiye/Türklerle ilgili olup olmadığını kontrol eder."""
-    # Ana metni kontrol et
-    text = item.get("text", "").lower()
-    for keyword in TURKISH_KEYWORDS:
-        if keyword.lower() in text:
-            return True
+    # Tüm metinleri birleştir
+    texts = [item.get("text", "")]
     
-    # Wikipedia sayfalarının başlıklarını kontrol et
-    pages = item.get("pages", [])
-    for page in pages:
-        title = page.get("title", "").lower()
-        description = page.get("description", "").lower()
-        extract = page.get("extract", "").lower()
-        
-        for keyword in TURKISH_KEYWORDS:
-            kw_lower = keyword.lower()
-            if kw_lower in title or kw_lower in description or kw_lower in extract:
-                return True
+    for page in item.get("pages", []):
+        texts.append(page.get("title", ""))
+        texts.append(page.get("description", ""))
+        texts.append(page.get("extract", ""))
     
-    return False
+    combined = turkish_lower(' '.join(texts))
+    return bool(TURKISH_PATTERN.search(combined))
 
 def get_smart_event():
     # TR Saati Ayarı
-    today = datetime.now() + timedelta(hours=3)
+    today = get_turkey_now()
     month = today.month
     day = today.day
     
@@ -317,16 +336,19 @@ def get_smart_event():
         emoji_map = {"selected": "🌟", "events": "📅", "births": "🎂", "deaths": "🕊️"}
         header_emoji = emoji_map.get(category, "📅")
         
+        # Year kontrolü (None durumu için)
+        year_str = str(year) if year else "?"
+        
         final_tweets = []
         
         if len(tweet_parts) == 1:
             # Tek Tweet
-            text = f"{header_emoji} Tarihte Bugün ({day}.{month}.{year})\n\n{tweet_parts[0]} #tarih #tarihteneoldu"
+            text = f"{header_emoji} Tarihte Bugün ({day}.{month}.{year_str})\n\n{tweet_parts[0]} #tarih #tarihteneoldu"
             final_tweets.append(text)
         else:
             # Zincir (Thread)
             # 1. Tweet: Başlık + İlk Parça + Hashtagler
-            first_tweet = f"{header_emoji} Tarihte Bugün ({day}.{month}.{year})\n\n{tweet_parts[0]} #tarih #tarihteneoldu (1/{len(tweet_parts)})"
+            first_tweet = f"{header_emoji} Tarihte Bugün ({day}.{month}.{year_str})\n\n{tweet_parts[0]} #tarih #tarihteneoldu (1/{len(tweet_parts)})"
             final_tweets.append(first_tweet)
             
             # 2...N. Tweetler
@@ -365,41 +387,51 @@ def check_mentions_and_reply(client, api_v1):
      pass
 
 def download_image(url):
+    import time
+    
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'TarihBot/3.0 (+https://github.com/kagandms/tarihte-bugun-botu)'
     }
     
-    # 3 Kez Deneme Hakkı (Retry)
     max_retries = 3
-    import time
     
     for attempt in range(max_retries):
         try:
-            response = requests.get(url, headers=headers, stream=True, timeout=10)
+            response = requests.get(url, headers=headers, stream=True, timeout=15)
             
             if response.status_code == 200:
-                content_type = response.headers.get('Content-Type')
-                extension = mimetypes.guess_extension(content_type)
+                content_type = response.headers.get('Content-Type', '')
+                extension = mimetypes.guess_extension(content_type) if content_type else None
                 
                 # Fallback uzantı kontrolü
                 if not extension:
-                    if 'jpeg' in content_type or 'jpg' in content_type:
+                    if content_type and ('jpeg' in content_type or 'jpg' in content_type):
                         extension = '.jpg'
-                    elif 'png' in content_type:
+                    elif content_type and 'png' in content_type:
                         extension = '.png'
-                    elif 'webp' in content_type:
+                    elif content_type and 'webp' in content_type:
                         extension = '.webp'
                     else:
-                        extension = '.jpg' 
+                        extension = '.jpg'  # Default fallback
                 
                 # Temizlik
-                if extension == '.jpe': extension = '.jpg'
+                if extension == '.jpe': 
+                    extension = '.jpg'
 
                 filename = f"temp_image{extension}"
                 
+                # Boyut limiti kontrolü ile indirme
+                total_size = 0
                 with open(filename, 'wb') as f:
                     for chunk in response.iter_content(1024):
+                        total_size += len(chunk)
+                        if total_size > MAX_IMAGE_SIZE:
+                            print(f"⚠️ Görsel çok büyük ({total_size // 1024 // 1024}MB > 5MB), indirme iptal.")
+                            f.close()
+                            os.remove(filename)
+                            return None
                         f.write(chunk)
+                        
                 return filename
             
             elif response.status_code == 429:
