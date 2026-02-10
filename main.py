@@ -18,6 +18,62 @@ MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 load_dotenv()
 
 # --- 1. OPENROUTER (DEEPSEEK) İLE METİN YAZARLIĞI ---
+
+def smart_split_text(text, limit=200):
+    """
+    Metni anlam bütünlüğünü koruyarak parçalara böler.
+    Öncelik sırası:
+    1. Satır sonları (\n)
+    2. Cümle bitişleri (.!?)
+    3. Kelime boşlukları
+    """
+    parts = []
+    
+    while len(text) > limit:
+        # Kesme noktası bul
+        split_index = -1
+        
+        # 1. Satır sonu aray (limit içinde)
+        newline_index = text.rfind('\n', 0, limit)
+        if newline_index != -1:
+            split_index = newline_index
+        
+        # 2. Cümle sonu ara (limit içinde) - Eğer satır sonu bulamadıysak veya cümle sonu daha ilerideyse (ama limit içinde)
+        # Regex ile .!? ve boşluk arıyoruz
+        if split_index == -1:
+            # Basitçe son nokta, ünlem veya soru işaretini bulalım
+            for char in ['. ', '! ', '? ']:
+                idx = text.rfind(char, 0, limit)
+                if idx != -1:
+                    # Noktalama işaretini dahil etmek için +1 (boşluğu almıyoruz sonraki parta geçsin diye ama strip halledecek)
+                    # Aslında '. ' bulduysak index '.' nın indexidir. Biz '.' dahil olsun istiyoruz, o yüzden +1.
+                    if idx + 1 > split_index:
+                        split_index = idx + 1
+        
+        # 3. Boşluk ara (En son çare)
+        if split_index == -1:
+            space_index = text.rfind(' ', 0, limit)
+            if space_index != -1:
+                split_index = space_index
+                
+        # 4. Hiçbiri yoksa (kelime çok uzunsa) zorla kes
+        if split_index == -1:
+            split_index = limit
+            
+        # Parçayı ekle
+        chunk = text[:split_index].strip()
+        if chunk:
+            parts.append(chunk)
+            
+        # Kalan metni hazırla
+        text = text[split_index:].strip()
+        
+    # Kalan son parça
+    if text:
+        parts.append(text)
+        
+    return parts
+
 def rewrite_with_deepseek(original_text, year=None):
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
@@ -32,6 +88,13 @@ def rewrite_with_deepseek(original_text, year=None):
     
     year_context = f" ({year} yılında gerçekleşti)" if year else ""
     
+    # Fallback durumunda da akıllı bölme kullanmak için helper
+    def return_with_fallback(text):
+        if len(text) > MAX_TWEET_LENGTH - 60: # Biraz daha pay bırakalım
+            print(f"⚠️ Fallback metni çok uzun, akıllı bölme uygulanıyor...")
+            return smart_split_text(text, MAX_TWEET_LENGTH - 60), [], None
+        return [text], [], None
+
     system_prompt = (
         "Sen profesyonel bir tarihçi, editör ve sosyal medya uzmanısın. Görevin, sana verilen tarihi olayı "
         "Twitter (X) platformu için EKSİKSİZ, DOĞRU ve ÇOK İLGİ ÇEKİCİ bir formata dönüştürmektir."
@@ -81,7 +144,7 @@ def rewrite_with_deepseek(original_text, year=None):
             print(f"⚠️ OpenRouter API Hatası ({response.status_code}): {response.text}")
             if response.status_code == 401:
                  print("❗ HATA: API Key geçersiz veya bakiye yetersiz. Lütfen OPENROUTER_API_KEY secret'ını kontrol edin.")
-            return [original_text], [], None
+            return return_with_fallback(original_text)
             
         result = response.json()
         
@@ -118,23 +181,29 @@ def rewrite_with_deepseek(original_text, year=None):
             else:
                 tweet_parts = [content_text]
             
-            # 4. Tweet Uzunluk Kontrolü ve Kırpma
-            validated_parts = []
+            # 4. Akıllı Bölme (Truncation yerine Splitting)
+            final_parts = []
             for part in tweet_parts:
-                if len(part) > MAX_TWEET_LENGTH - 80:  # Header ve hashtagler için yer bırak
-                    part = part[:MAX_TWEET_LENGTH - 83] + "..."
-                validated_parts.append(part)
-            tweet_parts = validated_parts
+                # Header ve hashtagler için yaklaşık 80 karakter pay bırakıyoruz
+                limit = MAX_TWEET_LENGTH - 80 
+                if len(part) > limit:
+                     print(f"⚠️ Parça çok uzun ({len(part)} > {limit}), akıllı bölme uygulanıyor...")
+                     split_chunks = smart_split_text(part, limit)
+                     final_parts.extend(split_chunks)
+                else:
+                     final_parts.append(part)
+            
+            processed_parts = final_parts
 
-            print(f"Yapay Zeka metni revize etti! ({len(tweet_parts)} parça zincir) 🤖")
-            return tweet_parts, poll_options, image_prompt
+            print(f"Yapay Zeka metni revize etti! ({len(processed_parts)} parça zincir) 🤖")
+            return processed_parts, poll_options, image_prompt
         else:
             print("API yanıtı beklendiği gibi değil.")
-            return [original_text], [], None
+            return return_with_fallback(original_text)
             
     except Exception as e:
         print(f"Bağlantı Hatası: {e}")
-        return [original_text], [], None
+        return return_with_fallback(original_text)
 
 # --- 2. TWITTER BAĞLANTILARI ---
 def get_twitter_api_v1():
