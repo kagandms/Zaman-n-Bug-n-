@@ -23,30 +23,32 @@ def smart_split_text(text, limit=200):
     """
     Metni anlam bütünlüğünü koruyarak parçalara böler.
     Öncelik sırası:
-    1. Satır sonları (\n)
+    1. Satır sonları (\\n)
     2. Cümle bitişleri (.!?)
     3. Kelime boşlukları
+    4. Zorla kesme (Hard truncation)
     """
     parts = []
     
-    while len(text) > limit:
+    while text:
+        # Eğer metin limitten kısaysa direkt ekle
+        if len(text) <= limit:
+            parts.append(text)
+            break
+            
         # Kesme noktası bul
         split_index = -1
         
-        # 1. Satır sonu aray (limit içinde)
+        # 1. Satır sonu ara (limit içinde)
         newline_index = text.rfind('\n', 0, limit)
         if newline_index != -1:
             split_index = newline_index
         
-        # 2. Cümle sonu ara (limit içinde) - Eğer satır sonu bulamadıysak veya cümle sonu daha ilerideyse (ama limit içinde)
-        # Regex ile .!? ve boşluk arıyoruz
+        # 2. Cümle sonu ara (limit içinde)
         if split_index == -1:
-            # Basitçe son nokta, ünlem veya soru işaretini bulalım
             for char in ['. ', '! ', '? ']:
                 idx = text.rfind(char, 0, limit)
                 if idx != -1:
-                    # Noktalama işaretini dahil etmek için +1 (boşluğu almıyoruz sonraki parta geçsin diye ama strip halledecek)
-                    # Aslında '. ' bulduysak index '.' nın indexidir. Biz '.' dahil olsun istiyoruz, o yüzden +1.
                     if idx + 1 > split_index:
                         split_index = idx + 1
         
@@ -64,13 +66,9 @@ def smart_split_text(text, limit=200):
         chunk = text[:split_index].strip()
         if chunk:
             parts.append(chunk)
-            
+        
         # Kalan metni hazırla
         text = text[split_index:].strip()
-        
-    # Kalan son parça
-    if text:
-        parts.append(text)
         
     return parts
 
@@ -563,7 +561,8 @@ def main():
                         print(f"Geçici görsel silindi: {filename}")
         
         # Zincir Gönderimi
-        sent_successfully = False
+        all_tweets_sent = True # Başarı bayrağı
+        
         for i, text in enumerate(tweet_thread):
             # Tweet Parametrelerini Hazırla
             tweet_params = {"text": text}
@@ -571,7 +570,6 @@ def main():
             # İlk tweet ise görsel ekle
             if i == 0 and media_id:
                 tweet_params["media_ids"] = [media_id]
-                print(f"Tweet parametrelerine visual eklendi: {tweet_params['media_ids']}")
             
             # Zincirleme mantığı
             if last_tweet_id:
@@ -583,91 +581,75 @@ def main():
                     tweet_params["poll_options"] = poll_options
                     tweet_params["poll_duration_minutes"] = 1440
 
-            # --- GÜVENLİ GÖNDERİM (FALLBACK MEPKANİZMASI) ---
-            # 1. Deneme: Her şey dahil
-            try:
-                response = client_v2.create_tweet(**tweet_params)
-                last_tweet_id = response.data['id']
-                print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Tam)")
-                sent_successfully = True
-                continue # Başarılı, sonraki tweete geç
-            except TooManyRequests as e:
-                print(f"❌ RATE LIMIT EXCEEDED (429): {e}")
-                
-                # Reset zamanını bul
-                reset_timestamp = None
-                if e.response is not None and 'x-rate-limit-reset' in e.response.headers:
-                    reset_timestamp = int(e.response.headers['x-rate-limit-reset'])
-                    reset_time = datetime.fromtimestamp(reset_timestamp).strftime('%H:%M:%S')
-                    print(f"⏳ API Reset Zamanı: {reset_time}")
-                
-                print("⚠️ Zincir kırıldı. Tekrar denenmeyecek (Rate Limit).")
-                break
-
-            except Exception as e:
-                error_str = str(e)
-                print(f"❌ Tweet Gönderim Hatası (Tam): {error_str}")
-                
-                if "403 Forbidden" in error_str:
-                    print("🚨 403 FORBIDDEN DETAYLARI:")
-                    if "usage of this app is suspended" in error_str.lower():
-                        print("👉 Uygulama askıya alınmış (Suspended). Twitter Developer Portal'ı kontrol edin.")
-                    elif "must be enrolled" in error_str.lower():
-                        print("👉 Temel (Basic) Tier üyeliği gerekli. Free Tier sadece write-only olabilir veya limit dolmuş.")
-                    elif "duplicate" in error_str.lower():
-                        print("👉 DUPLICATE CONTENT: Bu tweet daha önce atılmış.")
-                    else:
-                        print("👉 İzin sorunu. App yetkilerinin 'Read and Write' olduğundan emin olun.")
-                        print("💡 İPUCU: İzinleri değiştirdiyseniz, DEVELOPER PORTAL'da 'Regenerate' diyerek yeni Access Token/Secret almanız ŞARTTIR.")
+            # --- GÜVENLİ GÖNDERİM VE RETRY MEKANİZMASI ---
+            max_retries = 3
+            tweet_sent = False
+            
+            for attempt in range(max_retries):
+                try:
+                    print(f"Tweet {i+1}/{len(tweet_thread)} gönderiliyor (Deneme {attempt+1})...")
+                    response = client_v2.create_tweet(**tweet_params)
+                    last_tweet_id = response.data['id']
+                    print(f"✅ Tweet {i+1} başarıyla gönderildi!")
+                    tweet_sent = True
+                    break # Başarılıysa döngüden çık
                     
-                    # RAW ERROR LOGGING
-                    if hasattr(e, 'response') and e.response is not None:
-                        print("--- RAW API ERROR RESPONSE ---")
-                        print(f"Status Code: {e.response.status_code}")
-                        print(f"Headers: {e.response.headers}")
-                        print(f"Body: {e.response.text}")
-                        print("------------------------------")
-                elif "401 Unauthorized" in error_str:
-                    print("👉 Yetkilendirme Hatası. Key/Token değerlerini kontrol edin.")
-
-            # 2. Deneme: Anketsiz
-            if "poll_options" in tweet_params:
-                print("Anketsiz deneniyor...")
-                del tweet_params["poll_options"]
-                if "poll_duration_minutes" in tweet_params:
-                    del tweet_params["poll_duration_minutes"]
-                
-                try:
-                    response = client_v2.create_tweet(**tweet_params)
-                    last_tweet_id = response.data['id']
-                    print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Anketsiz)")
-                    sent_successfully = True
-                    continue # Başarılı
+                except TooManyRequests as e:
+                    print(f"⚠️ RATE LIMIT (429) - Deneme {attempt+1}/{max_retries}")
+                    reset_timestamp = None
+                    if e.response is not None and 'x-rate-limit-reset' in e.response.headers:
+                        reset_timestamp = int(e.response.headers['x-rate-limit-reset'])
+                        wait_time = reset_timestamp - int(time.time()) + 5 # 5sn tampon
+                        if wait_time > 0:
+                            print(f"⏳ {wait_time} saniye bekleniyor...")
+                            time.sleep(min(wait_time, 60)) # Max 60sn bekle, çok uzunsa pes et
+                        else:
+                            time.sleep(10)
+                    else:
+                        time.sleep(15)
+                        
                 except Exception as e:
-                    print(f"Hata (Anketsiz): {e}")
+                    error_str = str(e)
+                    print(f"❌ Hata (Deneme {attempt+1}): {error_str}")
+                    
+                    if "403 Forbidden" in error_str:
+                        if "duplicate" in error_str.lower():
+                            print("👉 DUPLICATE CONTENT: Bu tweet zaten atılmış. Zincire devam ediliyor.")
+                            # Duplicate ise atılmış sayıp devam edelim (belki crash sonrası tekrar çalıştı)
+                            tweet_sent = True 
+                            break
+                        else:
+                            # Diğer 403 hataları (suspended vs) kalıcıdır
+                            break
+                    
+                    # Anketsiz veya Medyasız tekrar deneme stratejileri
+                    if attempt == 0:
+                        # İlk hatada varsa anketi/medyayı kaldırıp bir sonraki denemeye temiz girelim
+                        if "poll_options" in tweet_params:
+                            print("🔄 Strateji: Anket kaldırılıyor...")
+                            del tweet_params["poll_options"]
+                            if "poll_duration_minutes" in tweet_params:
+                                del tweet_params["poll_duration_minutes"]
+                            continue
+                            
+                        if "media_ids" in tweet_params:
+                            print("🔄 Strateji: Medya kaldırılıyor...")
+                            del tweet_params["media_ids"]
+                            continue
+                    
+                    time.sleep(2 * (attempt + 1)) # Exponential backoff
 
-            # 3. Deneme: Medyasız (Sadece Metin)
-            if "media_ids" in tweet_params:
-                print("Medyasız deneniyor...")
-                del tweet_params["media_ids"]
-                
-                try:
-                    response = client_v2.create_tweet(**tweet_params)
-                    last_tweet_id = response.data['id']
-                    print(f"Tweet {i+1}/{len(tweet_thread)} gönderildi! (Metin)")
-                    sent_successfully = True
-                    continue # Başarılı
-                except Exception as e:
-                    print(f"Hata (Metin): {e}")
-
-            # Buraya geldiyse tüm denemeler başarısız olmuştur
-            print("Tüm denemeler başarısız. Zincir kırıldı.")
-            break
-
+            if not tweet_sent:
+                print(f"🚨 KRİTİK: Tweet {i+1} gönderilemedi! Zincir kırıldı.")
+                all_tweets_sent = False
+                break
+        
         # Başarıyla atıldıysa geçmişe kaydet
-        if sent_successfully and raw_text:
+        if all_tweets_sent and raw_text:
             save_to_history(raw_text)
             print("İçerik geçmişe kaydedildi. ✅")
+        else:
+            print("⚠️ Zincir tamamlanamadığı için geçmişe kaydedilmedi (Tekrar denenebilmesi için).")
                 
     else:
         print("İçerik bulunamadı.")
