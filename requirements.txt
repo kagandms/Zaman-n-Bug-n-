@@ -1,3 +1,22 @@
-tweepy==4.14.0
-requests==2.31.0
+# Core
+pydantic-settings==2.1.0
+loguru==0.7.2
 python-dotenv==1.0.0
+tenacity==8.2.3
+
+# Async I/O & Networking
+httpx==0.26.0
+
+# Database
+sqlalchemy==2.0.25
+aiosqlite==0.19.0
+
+# Twitter & API
+tweepy==4.14.0
+
+# Time & Utilities
+pytz==2023.3.post1
+
+# Testing & Dev
+pytest==7.4.4
+pytest-asyncio==0.23.3
