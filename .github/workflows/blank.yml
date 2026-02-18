@@ -30,13 +30,15 @@ jobs:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: python main.py
+          # Veritabanı URL'i (Env üzerinden ezmek istersek)
+          DATABASE_URL: "sqlite+aiosqlite:///bot_data.db"
+        run: python src/main.py
 
       - name: Degisiklikleri Kaydet
         run: |
           git config --global user.name 'TarihBot Otomasyon'
           git config --global user.email 'bot@noreply.github.com'
-          git add history.txt || true
-          git commit -m "chore: update bot state (history)" || true
+          git add bot_data.db || true
+          git commit -m "chore: update bot state (database)" || true
           git push
 
