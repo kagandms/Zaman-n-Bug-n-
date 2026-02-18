@@ -17,9 +17,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_SECRET: SecretStr
     BEARER_TOKEN: Optional[SecretStr] = None
     
-    # AI Provider (OpenRouter/DeepSeek)
+    # AI Provider (OpenRouter)
     OPENROUTER_API_KEY: SecretStr
-    AI_MODEL: str = "deepseek/deepseek-chat"
+    # Primary Model: Gemini 2.0 Flash Lite (Free & Fast)
+    AI_MODEL: str = "google/gemini-2.0-flash-lite-preview-02-05:free"
+    # Backup Model: Llama 3.3 70B (Free)
+    BACKUP_MODEL: str = "meta-llama/llama-3.3-70b-instruct:free"
     
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///bot_data.db"
