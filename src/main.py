@@ -88,18 +88,20 @@ async def main():
                  image_url = page["originalimage"]["source"]
         
         # B. AI Image Prompt (Creative)
+        import urllib.parse
         if not image_url and image_prompt:
              logger.info(f"Generating AI Image for: {image_prompt}")
-             safe_prompt = image_prompt.replace(" ", "%20")
+             safe_prompt = urllib.parse.quote(image_prompt)
              image_url = f"https://pollinations.ai/p/{safe_prompt}?width=1024&height=1024&model=flux"
 
         # C. Fallback: Generate Image from Event Text (Panic Mode)
         if not image_url:
             logger.warning("No image found! Generating fallback image from event text.")
             # Use the first 100 chars of raw text as prompt
-            fallback_prompt = raw_text[:100].replace(" ", "%20")
+            fallback_prompt = raw_text[:100]
+            safe_fallback = urllib.parse.quote(fallback_prompt)
             # Using 'flux' model for better text adherence
-            image_url = f"https://pollinations.ai/p/historical%20painting%20of%20{fallback_prompt}?width=1024&height=1024&model=flux&seed={random.randint(0, 9999)}"
+            image_url = f"https://pollinations.ai/p/historical%20painting%20of%20{safe_fallback}?width=1024&height=1024&model=flux&seed={random.randint(0, 9999)}"
 
         if image_url:
             logger.info(f"Downloading image: {image_url}")

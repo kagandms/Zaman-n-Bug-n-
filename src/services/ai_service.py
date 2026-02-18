@@ -56,8 +56,8 @@ class AIService:
                 response = await client.post(self.url, headers=self.headers, json=payload)
                 
                 if response.status_code != 200:
-                    logger.warning(f"Primary Model ({settings.AI_MODEL}) failed: {response.status_code}")
-                    raise Exception("Primary model failure")
+                    logger.warning(f"Primary Model ({settings.AI_MODEL}) failed: {response.status_code} - BODY: {response.text}")
+                    raise Exception(f"Primary model failure: {response.text}")
                     
                 result = response.json()
                 content = result['choices'][0]['message']['content'].strip()
