@@ -9,9 +9,13 @@ class ImageService:
 
     async def download_image(self, url: str, filename: str = "temp_image.jpg") -> str:
         """Downloads an image from URL."""
-        headers = {'User-Agent': f'{settings.APP_NAME} Bot'}
+        # Use a real browser UA to avoid 403s
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Referer': 'https://www.google.com'
+        }
         
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(follow_redirects=True) as client:
             try:
                 async with client.stream("GET", url, headers=headers, timeout=20.0) as resp:
                     if resp.status_code != 200:
