@@ -95,8 +95,19 @@ class AIService:
             return await self.rewrite_event(original_text, formatted_date, year)
         except Exception as e:
             logger.critical(f"AI Service Failed after retries: {e}")
-            # Fallback: Split original text
-            return smart_split_text(original_text, settings.MAX_TWEET_LENGTH - 60), [], None
+            # Fallback: Split original text BUT WITH THE HEADER
+            header = f"🕊️ Tarihte Bugün ({formatted_date})\n\n"
+            # Calculate remaining space: 220 - len(header)
+            available_len = settings.MAX_TWEET_LENGTH - len(header) - 20
+            
+            # Smart split the content
+            parts = smart_split_text(original_text, available_len)
+            
+            # Prepend header to first part
+            if parts:
+                parts[0] = header + parts[0]
+                
+            return parts, [], None
 
     def _parse_ai_response(self, content: str, original_text: str):
         """Parses the structured response from AI."""
