@@ -69,7 +69,8 @@ async def main():
 
         # 5. AI Rewrite
         logger.info("🤖 Requesting AI Rewrite...")
-        tweets, poll_options, image_prompt = await ai_service.rewrite_event_safe(raw_text, year)
+        date_str = f"{today.day}.{today.month}.{today.year}"
+        tweets, poll_options, image_prompt = await ai_service.rewrite_event_safe(raw_text, date_str, year)
         
         if not tweets:
             logger.error("AI service returned empty tweets even after fallback.")

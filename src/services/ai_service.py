@@ -18,7 +18,7 @@ class AIService:
         }
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    async def rewrite_event(self, original_text: str, year: Optional[str] = None) -> Tuple[List[str], List[str], Optional[str]]:
+    async def rewrite_event(self, original_text: str, formatted_date: str, year: Optional[str] = None) -> Tuple[List[str], List[str], Optional[str]]:
         """
         Rewrites the event text using DeepSeek to be viral and suitable for Twitter.
         Returns: (tweet_parts, poll_options, image_prompt)
@@ -29,13 +29,20 @@ class AIService:
             "Sen profesyonel bir tarihçi ve sosyal medya uzmanısın. Görevin: "
             "Verilen tarihi olayı Twitter için VİRAL, İLGİ ÇEKİCİ ve DOĞRU bir flood (zincir) haline getirmektir."
             "\n\nKURALLAR:"
-            "\n- Her tweet < 220 karakter olmalı (güvenlik payı ile)."
-            "\n- Türkçe dil bilgisi kusursuz olmalı."
-            "\n- Asla halüsinasyon görme (uydurma bilgi yok)."
-            "\n\nFORMAT:"
-            "\n[Tweet 1]"
+            "\n- KESİNLİKLE 3 tweetlik bir zincir oluştur."
+            "\n- Her tweet en fazla 220 karakter olsun."
+            "\n- Sadece İlk tweet'te hashtag kullan."
+            "\n- Hikaye anlatıcılığı (storytelling) kullan."
+            "\n\nISTENEN FORMAT:"
+            f"\n🕊️ Tarihte Bugün ({formatted_date})"
+            "\n[İlgi çekici giriş cümlesi]"
+            "\n#tarih #tarihteneoldu (1/3)"
             "\n---"
-            "\n[Tweet 2]"
+            "\n[Olayın detayları ve gelişimi]"
+            "\n(2/3)"
+            "\n---"
+            "\n[Sonuç ve günümüze etkisi] 📚"
+            "\n(3/3)"
             "\nANKET: [Soru] | [Seçenek 1] | [Seçenek 2]"
             "\nGORSEL_PROMPT: [English Image Prompt]"
         )
@@ -82,10 +89,10 @@ class AIService:
                     logger.error(f"❌ Backup Model also failed: {backup_e}")
                     raise # Retries from tenacity will catch this
 
-    async def rewrite_event_safe(self, original_text: str, year: Optional[str] = None):
+    async def rewrite_event_safe(self, original_text: str, formatted_date: str, year: Optional[str] = None):
         """Wrapper ensuring fallback if retries fail."""
         try:
-            return await self.rewrite_event(original_text, year)
+            return await self.rewrite_event(original_text, formatted_date, year)
         except Exception as e:
             logger.critical(f"AI Service Failed after retries: {e}")
             # Fallback: Split original text
