@@ -19,10 +19,10 @@ class Settings(BaseSettings):
     
     # AI Provider (OpenRouter)
     OPENROUTER_API_KEY: SecretStr
-    # Primary Model: Nous Hermes 3 405B (Uncensored & Powerful)
-    AI_MODEL: str = "nousresearch/hermes-3-llama-3.1-405b:free"
-    # Backup Model: Llama 3.3 70B (Free)
-    BACKUP_MODEL: str = "meta-llama/llama-3.3-70b-instruct:free"
+    # Primary Model: Gemma 3 12B (Fast, native Turkish support, no data policy block)
+    AI_MODEL: str = "google/gemma-3-12b-it:free"
+    # Backup Model: NVIDIA Nemotron 30B (Reliable)
+    BACKUP_MODEL: str = "nvidia/nemotron-3-nano-30b-a3b:free"
     
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///bot_data.db"
