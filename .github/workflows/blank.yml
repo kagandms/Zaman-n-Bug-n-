@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Depoyu Cek
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Python Kur
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.9'
 
@@ -41,4 +41,3 @@ jobs:
           git add -f bot_data.db || true
           git commit -m "chore: update bot state (database)" || true
           git push
-
