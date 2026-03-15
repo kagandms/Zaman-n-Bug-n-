@@ -2,7 +2,11 @@ import httpx
 import json
 from src.core.config import settings
 from src.core.logger import logger
-from src.utils.text_utils import smart_split_text, clean_twitter_text
+from src.utils.text_utils import (
+    clean_twitter_text,
+    sanitize_http_header_value,
+    smart_split_text,
+)
 from typing import Tuple, List, Optional
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -10,11 +14,12 @@ class AIService:
     def __init__(self):
         self.api_key = settings.OPENROUTER_API_KEY.get_secret_value()
         self.url = "https://openrouter.ai/api/v1/chat/completions"
+        header_title = sanitize_http_header_value(settings.APP_NAME)
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "https://github.com/kagandms/tarihte-bugun-botu",
-            "X-Title": settings.APP_NAME
+            "X-Title": header_title
         }
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))

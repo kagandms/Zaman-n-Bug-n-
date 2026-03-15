@@ -1,3 +1,4 @@
+import unicodedata
 from typing import List
 
 def smart_split_text(text: str, limit: int = 200) -> List[str]:
@@ -47,3 +48,16 @@ def smart_split_text(text: str, limit: int = 200) -> List[str]:
 def clean_twitter_text(text: str) -> str:
     """Removes unwanted characters or formatting."""
     return text.replace('"', '').replace("'", "").strip()
+
+
+def sanitize_http_header_value(
+    value: str,
+    fallback: str = "Tarihte Bugun Botu"
+) -> str:
+    """Normalizes header values to ASCII because HTTP headers are ASCII-only."""
+    normalized_value = unicodedata.normalize("NFKD", value)
+    ascii_value = normalized_value.encode("ascii", "ignore").decode("ascii")
+    compact_value = " ".join(ascii_value.split())
+    if compact_value:
+        return compact_value
+    return fallback
