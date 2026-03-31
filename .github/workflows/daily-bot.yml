@@ -6,7 +6,7 @@ on:
     - cron: '0 6,10,14,18 * * *'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   calistir:
@@ -18,7 +18,7 @@ jobs:
       - name: Python Kur
         uses: actions/setup-python@v6
         with:
-          python-version: '3.9'
+          python-version: '3.11'
 
       - name: Kutuphaneleri Yukle
         run: pip install -r requirements.txt
@@ -30,14 +30,4 @@ jobs:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          # Veritabanı URL'i (Env üzerinden ezmek istersek)
-          DATABASE_URL: "sqlite+aiosqlite:///bot_data.db"
         run: python -m src.main
-
-      - name: Degisiklikleri Kaydet
-        run: |
-          git config --global user.name 'TarihBot Otomasyon'
-          git config --global user.email 'bot@noreply.github.com'
-          git add -f bot_data.db || true
-          git commit -m "chore: update bot state (database)" || true
-          git push

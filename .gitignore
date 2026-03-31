@@ -75,6 +75,8 @@ celerybeat-schedule
 
 # dotenv
 .env
+.env.*
+!.env.example
 .venv
 env/
 venv/
@@ -92,5 +94,11 @@ venv.bak/
 
 # Project Specific
 logs/
+bot_data.db
+history.txt
+loglar.txt
+check_ai_embedded.py
+temp_image.jpg
+temp_image.png
+test_ai.py
 verify_db.py
-
