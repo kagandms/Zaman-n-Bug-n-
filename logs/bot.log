@@ -1,0 +1,283 @@
+2026-07-18 14:09:54 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 14:12:20 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 14:12:21 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 14:12:21 | ERROR | __main__:<module>:158 | Unhandled Exception: the greenlet library is required to use this function. No module named 'greenlet'
+Traceback (most recent call last):
+
+> File "/Users/kagansmtdms/Downloads/Проекты/tarihte-bugun-botu--/src/main.py", line 154, in <module>
+    asyncio.run(main())
+
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+
+  File "/Users/kagansmtdms/Downloads/Проекты/tarihte-bugun-botu--/src/main.py", line 19, in main
+    await init_db()
+
+  File "/Users/kagansmtdms/Downloads/Проекты/tarihte-bugun-botu--/src/data/database.py", line 20, in init_db
+    async with engine.begin() as conn:
+
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/contextlib.py", line 214, in __aenter__
+    return await anext(self.gen)
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/engine.py", line 1068, in begin
+    async with conn:
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/base.py", line 121, in __aenter__
+    return await self.start(is_ctxmanager=True)
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/engine.py", line 275, in start
+    await greenlet_spawn(self.sync_engine.connect)
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/site-packages/sqlalchemy/util/concurrency.py", line 101, in greenlet_spawn
+    _not_implemented()
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/site-packages/sqlalchemy/util/concurrency.py", line 81, in _not_implemented
+    raise ValueError(
+
+ValueError: the greenlet library is required to use this function. No module named 'greenlet'
+2026-07-18 14:13:01 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 14:13:02 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 14:13:02 | ERROR | __main__:<module>:158 | Unhandled Exception: the greenlet library is required to use this function. No module named 'greenlet'
+Traceback (most recent call last):
+
+> File "/Users/kagansmtdms/Downloads/Проекты/tarihte-bugun-botu--/src/main.py", line 154, in <module>
+    asyncio.run(main())
+
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+
+  File "/Users/kagansmtdms/Downloads/Проекты/tarihte-bugun-botu--/src/main.py", line 19, in main
+    await init_db()
+
+  File "/Users/kagansmtdms/Downloads/Проекты/tarihte-bugun-botu--/src/data/database.py", line 20, in init_db
+    async with engine.begin() as conn:
+
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/contextlib.py", line 214, in __aenter__
+    return await anext(self.gen)
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/engine.py", line 1068, in begin
+    async with conn:
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/base.py", line 121, in __aenter__
+    return await self.start(is_ctxmanager=True)
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/engine.py", line 275, in start
+    await greenlet_spawn(self.sync_engine.connect)
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/site-packages/sqlalchemy/util/concurrency.py", line 101, in greenlet_spawn
+    _not_implemented()
+  File "/Users/kagansmtdms/Downloads/anaconda/miniconda3/lib/python3.13/site-packages/sqlalchemy/util/concurrency.py", line 81, in _not_implemented
+    raise ValueError(
+
+ValueError: the greenlet library is required to use this function. No module named 'greenlet'
+2026-07-18 14:13:37 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 14:13:38 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 14:13:41 | INFO | src.services.telegram_service:verify_credentials:22 | Connected to Telegram Bot: zamaninbugunu_bot
+2026-07-18 14:13:41 | INFO | src.services.threads_service:verify_credentials:20 | Connected to Threads API successfully.
+2026-07-18 14:13:41 | INFO | __main__:main:41 | Fetching events for 18.7...
+2026-07-18 14:13:46 | INFO | src.services.content_service:select_best_event:63 | Found 29 Turkish events.
+2026-07-18 14:13:46 | INFO | __main__:main:76 | Selected Event: Bedrettin Dalan, Türk mühendis ve siyasetçi (1941)
+2026-07-18 14:13:46 | INFO | __main__:main:79 | 🤖 Requesting AI Rewrite...
+2026-07-18 14:13:46 | WARNING | src.services.ai_service:rewrite_event:67 | Primary Model (google/gemma-3-12b-it:free) failed: 401 - BODY: {"error":{"message":"User not found.","code":401}}
+2026-07-18 14:13:46 | WARNING | src.services.ai_service:rewrite_event:76 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"User not found.","code":401}}. Switching to Backup Model...
+2026-07-18 14:13:46 | ERROR | src.services.ai_service:rewrite_event:90 | ❌ Backup Model also failed: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2026-07-18 14:13:50 | WARNING | src.services.ai_service:rewrite_event:67 | Primary Model (google/gemma-3-12b-it:free) failed: 401 - BODY: {"error":{"message":"User not found.","code":401}}
+2026-07-18 14:13:50 | WARNING | src.services.ai_service:rewrite_event:76 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"User not found.","code":401}}. Switching to Backup Model...
+2026-07-18 14:13:50 | ERROR | src.services.ai_service:rewrite_event:90 | ❌ Backup Model also failed: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2026-07-18 14:13:55 | WARNING | src.services.ai_service:rewrite_event:67 | Primary Model (google/gemma-3-12b-it:free) failed: 401 - BODY: {"error":{"message":"User not found.","code":401}}
+2026-07-18 14:13:55 | WARNING | src.services.ai_service:rewrite_event:76 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"User not found.","code":401}}. Switching to Backup Model...
+2026-07-18 14:13:55 | ERROR | src.services.ai_service:rewrite_event:90 | ❌ Backup Model also failed: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2026-07-18 14:13:55 | CRITICAL | src.services.ai_service:rewrite_event_safe:98 | AI Service Failed after retries: RetryError[<Future at 0x1057c8550 state=finished raised HTTPStatusError>]
+2026-07-18 14:13:55 | WARNING | __main__:main:109 | No image found! Generating fallback image from event text.
+2026-07-18 14:13:55 | INFO | __main__:main:118 | Downloading image for Telegram: https://pollinations.ai/p/historical%20painting%20of%20Bedrettin%20Dalan%2C%20T%C3%BCrk%20m%C3%BChendis%20ve%20siyaset%C3%A7i?width=1024&height=1024&model=flux&seed=1833
+2026-07-18 14:13:55 | INFO | __main__:main:130 | Posting to Telegram...
+2026-07-18 14:13:55 | ERROR | src.services.telegram_service:_send_photo:90 | Telegram Photo API Error: {"ok":false,"error_code":400,"description":"Bad Request: IMAGE_PROCESS_FAILED"}
+2026-07-18 14:14:01 | ERROR | src.services.telegram_service:_send_photo:90 | Telegram Photo API Error: {"ok":false,"error_code":400,"description":"Bad Request: IMAGE_PROCESS_FAILED"}
+2026-07-18 14:14:11 | ERROR | src.services.telegram_service:_send_photo:90 | Telegram Photo API Error: {"ok":false,"error_code":400,"description":"Bad Request: IMAGE_PROCESS_FAILED"}
+2026-07-18 14:14:26 | INFO | __main__:main:135 | Posting to Threads...
+2026-07-18 14:14:27 | ERROR | src.services.threads_service:_make_request:85 | Threads API Error (https://graph.threads.net/v1.0/27976364531976285/threads): {"error":{"message":"The image format is not supported.","type":"OAuthException","code":36001,"error_subcode":2207083,"is_transient":false,"error_user_title":"Bilinmeyen G\u00f6rsel Format\u0131","error_user_msg":"G\u00f6rsel, format\u0131 tan\u0131nmad\u0131\u011f\u0131 i\u00e7in i\u015flenemedi. Bu genellikle dosyan\u0131n bozuk oldu\u011fu, ge\u00e7erli bir g\u00f6rsel olmad\u0131\u011f\u0131 veya URL'nin bir g\u00f6rsel yerine hata sayfas\u0131 d\u00f6nd\u00fcrd\u00fc\u011f\u00fc anlam\u0131na gelir. L\u00fctfen image_url'nin desteklenen bir formatta (JPEG, PNG, GIF, WebP, HEIC veya AVIF) ge\u00e7erli bir g\u00f6rsel dosyas\u0131na i\u015faret etti\u011fini do\u011frulay\u0131n. Desteklenen formatlar ve medya teknik \u00f6zellikleri hakk\u0131nda daha fazla bilgi i\u00e7in \u015furaya bak\u0131n: https:\/\/developers.facebook.com\/docs\/instagram-platform\/instagram-graph-api\/reference\/ig-user\/media#creating","fbtrace_id":"A1vIKQ0JPmr-6gptZi3keI7"}}
+2026-07-18 14:14:33 | ERROR | src.services.threads_service:_make_request:85 | Threads API Error (https://graph.threads.net/v1.0/27976364531976285/threads): {"error":{"message":"The image format is not supported.","type":"OAuthException","code":36001,"error_subcode":2207083,"is_transient":false,"error_user_title":"Bilinmeyen G\u00f6rsel Format\u0131","error_user_msg":"G\u00f6rsel, format\u0131 tan\u0131nmad\u0131\u011f\u0131 i\u00e7in i\u015flenemedi. Bu genellikle dosyan\u0131n bozuk oldu\u011fu, ge\u00e7erli bir g\u00f6rsel olmad\u0131\u011f\u0131 veya URL'nin bir g\u00f6rsel yerine hata sayfas\u0131 d\u00f6nd\u00fcrd\u00fc\u011f\u00fc anlam\u0131na gelir. L\u00fctfen image_url'nin desteklenen bir formatta (JPEG, PNG, GIF, WebP, HEIC veya AVIF) ge\u00e7erli bir g\u00f6rsel dosyas\u0131na i\u015faret etti\u011fini do\u011frulay\u0131n. Desteklenen formatlar ve medya teknik \u00f6zellikleri hakk\u0131nda daha fazla bilgi i\u00e7in \u015furaya bak\u0131n: https:\/\/developers.facebook.com\/docs\/instagram-platform\/instagram-graph-api\/reference\/ig-user\/media#creating","fbtrace_id":"AySg4c0R2uqx4iIE64acFUF"}}
+2026-07-18 14:14:43 | ERROR | src.services.threads_service:_make_request:85 | Threads API Error (https://graph.threads.net/v1.0/27976364531976285/threads): {"error":{"message":"The image format is not supported.","type":"OAuthException","code":36001,"error_subcode":2207083,"is_transient":false,"error_user_title":"Bilinmeyen G\u00f6rsel Format\u0131","error_user_msg":"G\u00f6rsel, format\u0131 tan\u0131nmad\u0131\u011f\u0131 i\u00e7in i\u015flenemedi. Bu genellikle dosyan\u0131n bozuk oldu\u011fu, ge\u00e7erli bir g\u00f6rsel olmad\u0131\u011f\u0131 veya URL'nin bir g\u00f6rsel yerine hata sayfas\u0131 d\u00f6nd\u00fcrd\u00fc\u011f\u00fc anlam\u0131na gelir. L\u00fctfen image_url'nin desteklenen bir formatta (JPEG, PNG, GIF, WebP, HEIC veya AVIF) ge\u00e7erli bir g\u00f6rsel dosyas\u0131na i\u015faret etti\u011fini do\u011frulay\u0131n. Desteklenen formatlar ve medya teknik \u00f6zellikleri hakk\u0131nda daha fazla bilgi i\u00e7in \u015furaya bak\u0131n: https:\/\/developers.facebook.com\/docs\/instagram-platform\/instagram-graph-api\/reference\/ig-user\/media#creating","fbtrace_id":"AEB7X0GF94jCK2KwCwv2o1d"}}
+2026-07-18 14:14:58 | ERROR | __main__:main:150 | ❌ Failed to post to any platform.
+2026-07-18 14:26:19 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 14:26:19 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 14:26:20 | INFO | src.services.telegram_service:verify_credentials:22 | Connected to Telegram Bot: zamaninbugunu_bot
+2026-07-18 14:26:20 | INFO | src.services.threads_service:verify_credentials:20 | Connected to Threads API successfully.
+2026-07-18 14:26:20 | INFO | __main__:main:41 | Fetching events for 18.7...
+2026-07-18 14:26:27 | INFO | src.services.content_service:select_best_event:63 | Found 29 Turkish events.
+2026-07-18 14:26:27 | INFO | __main__:main:76 | Selected Event: Erdal Çelik, Türk müzisyen, besteci ve söz yazarı (1959)
+2026-07-18 14:26:27 | INFO | __main__:main:79 | 🤖 Requesting AI Rewrite...
+2026-07-18 14:26:28 | WARNING | src.services.ai_service:rewrite_event:67 | Primary Model (google/gemma-3-12b-it:free) failed: 404 - BODY: {"error":{"message":"This model is unavailable for free. The paid version is available now - use this slug instead: google/gemma-3-12b-it","code":404},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:26:28 | WARNING | src.services.ai_service:rewrite_event:76 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"This model is unavailable for free. The paid version is available now - use this slug instead: google/gemma-3-12b-it","code":404},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:26:35 | INFO | src.services.ai_service:rewrite_event:86 | ✅ Success with Backup Model: nvidia/nemotron-3-nano-30b-a3b:free
+2026-07-18 14:26:35 | INFO | __main__:main:103 | Generating AI Image for: A vibrant portrait of a young Erdal Çelik holding a vintage microphone, 1950s Turkish street backdrop with soft lighting, retro color palette, illustration style reminiscent of classic album covers.
+2026-07-18 14:26:35 | INFO | __main__:main:118 | Downloading image for Telegram: https://image.pollinations.ai/prompt/A%20vibrant%20portrait%20of%20a%20young%20Erdal%20%C3%87elik%20holding%20a%20vintage%20microphone%2C%201950s%20Turkish%20street%20backdrop%20with%20soft%20lighting%2C%20retro%20color%20palette%2C%20illustration%20style%20reminiscent%20of%20classic%20album%20covers.?width=1024&height=1024&model=flux&nologo=true
+2026-07-18 14:26:36 | INFO | __main__:main:130 | Posting to Telegram...
+2026-07-18 14:26:37 | INFO | src.services.telegram_service:_send_photo:87 | Successfully posted photo to Telegram.
+2026-07-18 14:26:37 | ERROR | src.services.telegram_service:_send_message:66 | Telegram API Error: {"ok":false,"error_code":400,"description":"Bad Request: can't parse entities: Unsupported start tag \"todaydate\" at byte offset 784"}
+2026-07-18 14:26:42 | ERROR | src.services.telegram_service:_send_message:66 | Telegram API Error: {"ok":false,"error_code":400,"description":"Bad Request: can't parse entities: Unsupported start tag \"todaydate\" at byte offset 784"}
+2026-07-18 14:26:52 | ERROR | src.services.telegram_service:_send_message:66 | Telegram API Error: {"ok":false,"error_code":400,"description":"Bad Request: can't parse entities: Unsupported start tag \"todaydate\" at byte offset 784"}
+2026-07-18 14:27:07 | INFO | __main__:main:135 | Posting to Threads...
+2026-07-18 14:27:12 | ERROR | src.services.threads_service:_make_request:85 | Threads API Error (https://graph.threads.net/v1.0/27976364531976285/threads_publish): {"error":{"message":"The requested resource does not exist","type":"OAuthException","code":24,"error_subcode":4279009,"is_transient":false,"error_user_title":"Medya Bulunamad\u0131","error_user_msg":"18064972307503677 kodlu medya bulunam\u0131yor.","fbtrace_id":"AHtfQSG3otpM8-Fv09CmFuk"}}
+2026-07-18 14:27:46 | INFO | __main__:main:148 | ✅ Cycle completed successfully.
+2026-07-18 14:31:21 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 14:31:21 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 14:31:22 | INFO | src.services.telegram_service:verify_credentials:22 | Connected to Telegram Bot: zamaninbugunu_bot
+2026-07-18 14:31:22 | INFO | src.services.threads_service:verify_credentials:20 | Connected to Threads API successfully.
+2026-07-18 14:31:22 | INFO | __main__:main:41 | Fetching events for 18.7...
+2026-07-18 14:31:23 | INFO | src.services.content_service:select_best_event:63 | Found 29 Turkish events.
+2026-07-18 14:31:23 | INFO | __main__:main:76 | Selected Event: Ertem Şener, Türk spor spikeri ve sunucu (1975)
+2026-07-18 14:31:23 | INFO | __main__:main:79 | 🤖 Requesting AI Rewrite...
+2026-07-18 14:31:23 | WARNING | src.services.ai_service:rewrite_event:67 | Primary Model (google/gemma-3-12b-it:free) failed: 404 - BODY: {"error":{"message":"This model is unavailable for free. The paid version is available now - use this slug instead: google/gemma-3-12b-it","code":404},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:31:23 | WARNING | src.services.ai_service:rewrite_event:76 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"This model is unavailable for free. The paid version is available now - use this slug instead: google/gemma-3-12b-it","code":404},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:31:55 | INFO | src.services.ai_service:rewrite_event:86 | ✅ Success with Backup Model: nvidia/nemotron-3-nano-30b-a3b:free
+2026-07-18 14:31:55 | INFO | __main__:main:103 | Generating AI Image for: A vintage microphone on a wooden desk with a Turkish flag, surrounded by old newspapers, dramatic lighting, high detail, photorealistic --ar 16:9 --v 5
+2026-07-18 14:31:55 | INFO | __main__:main:118 | Downloading image for Telegram: https://image.pollinations.ai/prompt/A%20vintage%20microphone%20on%20a%20wooden%20desk%20with%20a%20Turkish%20flag%2C%20surrounded%20by%20old%20newspapers%2C%20dramatic%20lighting%2C%20high%20detail%2C%20photorealistic%20--ar%2016%3A9%20--v%205?width=1024&height=1024&model=flux&nologo=true
+2026-07-18 14:31:59 | INFO | __main__:main:130 | Posting to Telegram...
+2026-07-18 14:32:00 | INFO | src.services.telegram_service:_send_photo:85 | Successfully posted photo to Telegram.
+2026-07-18 14:32:00 | INFO | __main__:main:135 | Posting to Threads...
+2026-07-18 14:32:04 | INFO | src.services.threads_service:post_thread:62 | Waiting 20 seconds for Meta to process the image URL...
+2026-07-18 14:32:39 | ERROR | src.services.threads_service:_make_request:89 | Threads API Error (https://graph.threads.net/v1.0/27976364531976285/threads_publish): {"error":{"message":"The requested resource does not exist","type":"OAuthException","code":24,"error_subcode":4279009,"is_transient":false,"error_user_title":"Medya Bulunamad\u0131","error_user_msg":"18064973465503677 kodlu medya bulunam\u0131yor.","fbtrace_id":"AfNdSUuRHMKoSuvxWrOlN9J"}}
+2026-07-18 14:32:51 | INFO | __main__:main:148 | ✅ Cycle completed successfully.
+2026-07-18 14:37:21 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 14:37:21 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 14:37:21 | INFO | src.services.telegram_service:verify_credentials:22 | Connected to Telegram Bot: zamaninbugunu_bot
+2026-07-18 14:37:22 | INFO | src.services.threads_service:verify_credentials:20 | Connected to Threads API successfully.
+2026-07-18 14:37:22 | INFO | __main__:main:41 | Fetching events for 18.7...
+2026-07-18 14:37:22 | INFO | src.services.content_service:select_best_event:63 | Found 29 Turkish events.
+2026-07-18 14:37:22 | INFO | __main__:main:76 | Selected Event: Türkiye, Cemiyet-i Akvam'a (Milletler Cemiyeti) 56. üye olarak kabul edildi. (1932)
+2026-07-18 14:37:22 | INFO | __main__:main:79 | 🤖 Requesting AI Rewrite...
+2026-07-18 14:37:22 | WARNING | src.services.ai_service:rewrite_event:68 | Primary Model (google/gemma-4-31b-it:free) failed: 429 - BODY: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Google AI Studio","is_byok":false,"provider_error_code":"429"}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:37:22 | WARNING | src.services.ai_service:rewrite_event:77 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Google AI Studio","is_byok":false,"provider_error_code":"429"}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:37:23 | ERROR | src.services.ai_service:rewrite_event:91 | ❌ Backup Model also failed: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-07-18 14:37:27 | WARNING | src.services.ai_service:rewrite_event:68 | Primary Model (google/gemma-4-31b-it:free) failed: 429 - BODY: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Google AI Studio","is_byok":false,"provider_error_code":"429"}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:37:27 | WARNING | src.services.ai_service:rewrite_event:77 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Google AI Studio","is_byok":false,"provider_error_code":"429"}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:37:27 | ERROR | src.services.ai_service:rewrite_event:91 | ❌ Backup Model also failed: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-07-18 14:37:32 | WARNING | src.services.ai_service:rewrite_event:68 | Primary Model (google/gemma-4-31b-it:free) failed: 429 - BODY: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Google AI Studio","is_byok":false,"provider_error_code":"429"}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:37:32 | WARNING | src.services.ai_service:rewrite_event:77 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Google AI Studio","is_byok":false,"provider_error_code":"429"}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:37:32 | ERROR | src.services.ai_service:rewrite_event:91 | ❌ Backup Model also failed: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-07-18 14:37:32 | CRITICAL | src.services.ai_service:rewrite_event_safe:99 | AI Service Failed after retries: RetryError[<Future at 0x10bfc8050 state=finished raised HTTPStatusError>]
+2026-07-18 14:37:32 | INFO | __main__:main:118 | Downloading image for Telegram: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Flag_of_the_League_of_Nations_%281939%29.svg/langtr-330px-Flag_of_the_League_of_Nations_%281939%29.svg.png
+2026-07-18 14:37:32 | INFO | __main__:main:130 | Posting to Telegram...
+2026-07-18 14:37:33 | INFO | src.services.telegram_service:_send_photo:85 | Successfully posted photo to Telegram.
+2026-07-18 14:37:33 | INFO | __main__:main:135 | Posting to Threads...
+2026-07-18 14:37:38 | ERROR | src.services.threads_service:_make_request:118 | Threads API Request Failed: 
+2026-07-18 14:37:47 | INFO | src.services.threads_service:post_thread:69 | Waiting 30 seconds for Meta to process the image URL...
+2026-07-18 14:38:21 | INFO | __main__:main:148 | ✅ Cycle completed successfully.
+2026-07-18 14:40:22 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 14:40:23 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 14:40:23 | INFO | src.services.telegram_service:verify_credentials:22 | Connected to Telegram Bot: zamaninbugunu_bot
+2026-07-18 14:40:24 | INFO | src.services.threads_service:verify_credentials:20 | Connected to Threads API successfully.
+2026-07-18 14:40:24 | INFO | __main__:main:41 | Fetching events for 18.7...
+2026-07-18 14:40:24 | INFO | src.services.content_service:select_best_event:63 | Found 29 Turkish events.
+2026-07-18 14:40:24 | INFO | __main__:main:76 | Selected Event: Cansın Özyosun, Türk dizi oyuncusu (1976)
+2026-07-18 14:40:24 | INFO | __main__:main:79 | 🤖 Requesting AI Rewrite...
+2026-07-18 14:40:25 | WARNING | src.services.ai_service:rewrite_event:68 | Primary Model (meta-llama/llama-3.3-70b-instruct:free) failed: 429 - BODY: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":24,"retry_after_seconds_raw":23.45,"headers":{"Retry-After":"24"}}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:40:25 | WARNING | src.services.ai_service:rewrite_event:77 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":24,"retry_after_seconds_raw":23.45,"headers":{"Retry-After":"24"}}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:40:25 | ERROR | src.services.ai_service:rewrite_event:91 | ❌ Backup Model also failed: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-07-18 14:40:30 | WARNING | src.services.ai_service:rewrite_event:68 | Primary Model (meta-llama/llama-3.3-70b-instruct:free) failed: 429 - BODY: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":19,"retry_after_seconds_raw":18.456,"headers":{"Retry-After":"19"}}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:40:30 | WARNING | src.services.ai_service:rewrite_event:77 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":19,"retry_after_seconds_raw":18.456,"headers":{"Retry-After":"19"}}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:40:30 | ERROR | src.services.ai_service:rewrite_event:91 | ❌ Backup Model also failed: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-07-18 14:40:35 | WARNING | src.services.ai_service:rewrite_event:68 | Primary Model (meta-llama/llama-3.3-70b-instruct:free) failed: 429 - BODY: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":14,"retry_after_seconds_raw":13.257,"headers":{"Retry-After":"14"}}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:40:35 | WARNING | src.services.ai_service:rewrite_event:77 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Venice","is_byok":false,"retry_after_seconds":14,"retry_after_seconds_raw":13.257,"headers":{"Retry-After":"14"}}},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:40:35 | ERROR | src.services.ai_service:rewrite_event:91 | ❌ Backup Model also failed: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+2026-07-18 14:40:35 | CRITICAL | src.services.ai_service:rewrite_event_safe:99 | AI Service Failed after retries: RetryError[<Future at 0x109af9d10 state=finished raised HTTPStatusError>]
+2026-07-18 14:40:35 | WARNING | __main__:main:109 | No image found! Generating fallback image from event text.
+2026-07-18 14:40:35 | INFO | __main__:main:118 | Downloading image for Telegram: https://image.pollinations.ai/prompt/historical%20painting%20of%20Cansn%20zyosun%20Trk%20dizi%20oyuncusu?width=1024&height=1024&model=flux&seed=9980&nologo=true
+2026-07-18 14:40:37 | INFO | __main__:main:130 | Posting to Telegram...
+2026-07-18 14:40:37 | INFO | src.services.telegram_service:_send_photo:85 | Successfully posted photo to Telegram.
+2026-07-18 14:40:37 | INFO | __main__:main:135 | Posting to Threads...
+2026-07-18 14:40:41 | INFO | src.services.threads_service:post_thread:69 | Waiting 30 seconds for Meta to process the image URL...
+2026-07-18 14:41:16 | INFO | __main__:main:148 | ✅ Cycle completed successfully.
+2026-07-18 14:43:46 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 14:43:47 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 14:43:47 | INFO | src.services.telegram_service:verify_credentials:22 | Connected to Telegram Bot: zamaninbugunu_bot
+2026-07-18 14:43:47 | INFO | src.services.threads_service:verify_credentials:20 | Connected to Threads API successfully.
+2026-07-18 14:43:47 | INFO | __main__:main:41 | Fetching events for 18.7...
+2026-07-18 14:43:48 | INFO | src.services.content_service:select_best_event:63 | Found 29 Turkish events.
+2026-07-18 14:43:48 | INFO | __main__:main:76 | Selected Event: Mehmet Bedrettin Köker, Türk hukukçu (d. 1897) (1978)
+2026-07-18 14:43:48 | INFO | __main__:main:79 | 🤖 Requesting AI Rewrite...
+2026-07-18 14:43:48 | WARNING | src.services.ai_service:rewrite_event:68 | Primary Model (nvidia/nemotron-3-super:free) failed: 400 - BODY: {"error":{"message":"nvidia/nemotron-3-super:free is not a valid model ID","code":400},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:43:48 | WARNING | src.services.ai_service:rewrite_event:77 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"nvidia/nemotron-3-super:free is not a valid model ID","code":400},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:43:48 | ERROR | src.services.ai_service:rewrite_event:91 | ❌ Backup Model also failed: Client error '404 Not Found' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-07-18 14:44:18 | WARNING | src.services.ai_service:rewrite_event:68 | Primary Model (nvidia/nemotron-3-super:free) failed: 400 - BODY: {"error":{"message":"nvidia/nemotron-3-super:free is not a valid model ID","code":400},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:44:18 | WARNING | src.services.ai_service:rewrite_event:77 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"nvidia/nemotron-3-super:free is not a valid model ID","code":400},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:44:18 | ERROR | src.services.ai_service:rewrite_event:91 | ❌ Backup Model also failed: Client error '404 Not Found' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-07-18 14:44:48 | WARNING | src.services.ai_service:rewrite_event:68 | Primary Model (nvidia/nemotron-3-super:free) failed: 400 - BODY: {"error":{"message":"nvidia/nemotron-3-super:free is not a valid model ID","code":400},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}
+2026-07-18 14:44:48 | WARNING | src.services.ai_service:rewrite_event:77 | ⚠️ Primary Model Failed: Primary model failure: {"error":{"message":"nvidia/nemotron-3-super:free is not a valid model ID","code":400},"user_id":"user_37dMPcUWuoCT4a4FRuod3VfZxsW"}. Switching to Backup Model...
+2026-07-18 14:44:48 | ERROR | src.services.ai_service:rewrite_event:91 | ❌ Backup Model also failed: Client error '404 Not Found' for url 'https://openrouter.ai/api/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2026-07-18 14:44:48 | CRITICAL | src.services.ai_service:rewrite_event_safe:99 | AI Service Failed after retries: RetryError[<Future at 0x1119c9d10 state=finished raised HTTPStatusError>]
+2026-07-18 14:44:48 | WARNING | __main__:main:109 | No image found! Generating fallback image from event text.
+2026-07-18 14:44:48 | INFO | __main__:main:118 | Downloading image for Telegram: https://image.pollinations.ai/prompt/historical%20painting%20of%20Mehmet%20Bedrettin%20Kker%20Trk%20hukuku%20d%201897?width=1024&height=1024&model=flux&seed=9645&nologo=true
+2026-07-18 14:44:49 | INFO | __main__:main:130 | Posting to Telegram...
+2026-07-18 14:44:50 | INFO | src.services.telegram_service:_send_photo:85 | Successfully posted photo to Telegram.
+2026-07-18 14:44:50 | INFO | __main__:main:135 | Posting to Threads...
+2026-07-18 14:44:54 | INFO | src.services.threads_service:post_thread:69 | Waiting 30 seconds for Meta to process the image URL...
+2026-07-18 14:45:28 | INFO | __main__:main:148 | ✅ Cycle completed successfully.
+2026-07-18 14:53:00 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 14:53:01 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 14:53:01 | INFO | src.services.telegram_service:verify_credentials:22 | Connected to Telegram Bot: zamaninbugunu_bot
+2026-07-18 14:53:01 | INFO | src.services.threads_service:verify_credentials:20 | Connected to Threads API successfully.
+2026-07-18 14:53:01 | INFO | __main__:main:41 | Fetching events for 18.7...
+2026-07-18 14:53:02 | INFO | src.services.content_service:select_best_event:63 | Found 29 Turkish events.
+2026-07-18 14:53:02 | INFO | __main__:main:76 | Selected Event: Banu Avar, Türk yazar, gazeteci, program yapımcısı ve sunucu (1955)
+2026-07-18 14:53:02 | INFO | __main__:main:79 | 🤖 Requesting AI Rewrite...
+2026-07-18 14:53:18 | INFO | src.services.ai_service:rewrite_event:73 | ✅ Success with Primary Model: openrouter/free
+2026-07-18 14:53:18 | INFO | __main__:main:118 | Downloading image for Telegram: https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Banu_Avar_-_8.3.16.jpg/330px-Banu_Avar_-_8.3.16.jpg
+2026-07-18 14:53:18 | INFO | __main__:main:130 | Posting to Telegram...
+2026-07-18 14:53:18 | INFO | src.services.telegram_service:_send_photo:85 | Successfully posted photo to Telegram.
+2026-07-18 14:53:18 | INFO | __main__:main:135 | Posting to Threads...
+2026-07-18 14:53:21 | INFO | src.services.threads_service:post_thread:69 | Waiting 30 seconds for Meta to process the image URL...
+2026-07-18 14:54:13 | ERROR | src.services.threads_service:_make_request:118 | Threads API Request Failed: 
+2026-07-18 14:54:24 | INFO | __main__:main:148 | ✅ Cycle completed successfully.
+2026-07-18 15:11:38 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 15:11:38 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 15:11:39 | INFO | src.services.telegram_service:verify_credentials:22 | Connected to Telegram Bot: zamaninbugunu_bot
+2026-07-18 15:11:39 | INFO | src.services.threads_service:verify_credentials:20 | Connected to Threads API successfully.
+2026-07-18 15:11:39 | INFO | __main__:main:41 | Fetching events for 18.7...
+2026-07-18 15:11:39 | INFO | src.services.content_service:select_best_event:63 | Found 29 Turkish events.
+2026-07-18 15:11:39 | INFO | __main__:main:76 | Selected Event: Ankara Etnografya Müzesi halka açıldı. (1930)
+2026-07-18 15:11:39 | INFO | __main__:main:79 | 🤖 Requesting AI Rewrite...
+2026-07-18 15:11:54 | INFO | src.services.ai_service:rewrite_event:73 | ✅ Success with Primary Model: openrouter/free
+2026-07-18 15:11:54 | INFO | __main__:main:118 | Downloading image for Telegram: https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Ankara_asv2021-10_img62_Ethnography_Museum.jpg/330px-Ankara_asv2021-10_img62_Ethnography_Museum.jpg
+2026-07-18 15:11:54 | INFO | __main__:main:130 | Posting to Telegram...
+2026-07-18 15:11:54 | INFO | src.services.telegram_service:_send_photo:85 | Successfully posted photo to Telegram.
+2026-07-18 15:11:54 | INFO | __main__:main:135 | Posting to Threads...
+2026-07-18 15:11:58 | INFO | src.services.threads_service:post_thread:69 | Waiting 30 seconds for Meta to process the image URL...
+2026-07-18 15:12:50 | INFO | __main__:main:148 | ✅ Cycle completed successfully.
+2026-07-18 15:30:30 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 15:30:31 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 15:30:32 | INFO | src.services.telegram_service:verify_credentials:22 | Connected to Telegram Bot: zamaninbugunu_bot
+2026-07-18 15:30:32 | INFO | src.services.threads_service:verify_credentials:20 | Connected to Threads API successfully.
+2026-07-18 15:30:32 | INFO | __main__:main:45 | 📋 Daily limit reached (7/3). No more posts today.
+2026-07-18 15:46:54 | INFO | src.core.logger:setup_logger:27 | Logger initialized. App: Tarihte Bugün Botu (Elite Edition) v4.0.0
+2026-07-18 15:46:54 | INFO | __main__:main:16 | 🚀 Starting Tarihte Bugün Botu (Elite Edition)
+2026-07-18 15:46:54 | INFO | src.services.telegram_service:verify_credentials:22 | Connected to Telegram Bot: zamaninbugunu_bot
+2026-07-18 15:46:55 | INFO | src.services.threads_service:verify_credentials:20 | Connected to Threads API successfully.
+2026-07-18 15:46:55 | INFO | __main__:main:52 | Fetching events for 18.7...
+2026-07-18 15:46:58 | INFO | src.services.content_service:select_best_event:167 | Event pool: 206 total (45 Turkish, 161 Global)
+2026-07-18 15:46:59 | INFO | src.services.content_service:select_best_event:202 |   #1 (score=185581, views=18,541,448): İstanbul-Ankara seferini yapan THY'na ait bir uçağın motoru yandı. Yol
+2026-07-18 15:46:59 | INFO | src.services.content_service:select_best_event:202 |   #2 (score=2053, views=190,176): Adolf Hitler, nasyonal sosyalist fikirlerini açıkladığı kişisel manife
+2026-07-18 15:46:59 | INFO | src.services.content_service:select_best_event:202 |   #3 (score=1563, views=141,164): Müttefik Yüksek Konseyi, işgal bölgeleri hakkında anlaşamayan İtalya v
+2026-07-18 15:46:59 | INFO | src.services.content_service:select_best_event:209 | 🏆 Selected most famous event (score=185581, pageviews=18,541,448)
+2026-07-18 15:46:59 | INFO | __main__:main:84 | Selected Event: İstanbul-Ankara seferini yapan THY'na ait bir uçağın motoru yandı. Yolculara korkulu anlar yaşatan yangın nedeniyle uçak, Atatürk Havaalanı'na zorunlu iniş yaptı. (1998)
+2026-07-18 15:46:59 | INFO | __main__:main:87 | 🤖 Requesting AI Rewrite...
+2026-07-18 15:47:05 | INFO | src.services.ai_service:rewrite_event:73 | ✅ Success with Primary Model: openrouter/free
+2026-07-18 15:47:05 | INFO | __main__:main:126 | Downloading image for Telegram: https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Bosphorus_Bridge_%28235499411%29.jpeg/330px-Bosphorus_Bridge_%28235499411%29.jpeg
+2026-07-18 15:47:05 | INFO | __main__:main:138 | Posting to Telegram...
+2026-07-18 15:47:06 | INFO | src.services.telegram_service:_send_photo:85 | Successfully posted photo to Telegram.
+2026-07-18 15:47:06 | INFO | __main__:main:143 | Posting to Threads...
+2026-07-18 15:47:09 | INFO | src.services.threads_service:post_thread:69 | Waiting 30 seconds for Meta to process the image URL...
+2026-07-18 15:47:56 | ERROR | src.services.threads_service:_make_request:116 | Threads API Error (https://graph.threads.net/v1.0/27976364531976285/threads_publish): {"error":{"message":"The requested resource does not exist","type":"OAuthException","code":24,"error_subcode":4279009,"is_transient":false,"error_user_title":"Medya Bulunamad\u0131","error_user_msg":"18064990460503677 kodlu medya bulunam\u0131yor.","fbtrace_id":"ACHsSojQrj9cKwkZOGpgh4c"}}
+2026-07-18 15:48:07 | INFO | __main__:main:156 | ✅ Cycle completed successfully.

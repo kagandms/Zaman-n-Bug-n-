@@ -10,25 +10,27 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     DRY_RUN: bool = False  # If True, no tweets will be sent
     
-    # Twitter API Credentials (V1 & V2)
-    API_KEY: SecretStr
-    API_SECRET: SecretStr
-    ACCESS_TOKEN: SecretStr
-    ACCESS_TOKEN_SECRET: SecretStr
-    BEARER_TOKEN: Optional[SecretStr] = None
+    # Telegram API Credentials
+    TELEGRAM_BOT_TOKEN: SecretStr
+    TELEGRAM_CHANNEL_ID: str
+    
+    # Threads API Credentials
+    THREADS_ACCESS_TOKEN: SecretStr
+    THREADS_USER_ID: SecretStr
     
     # AI Provider (OpenRouter)
     OPENROUTER_API_KEY: SecretStr
-    # Primary Model: Gemma 3 12B (Fast, native Turkish support, no data policy block)
-    AI_MODEL: str = "google/gemma-3-12b-it:free"
-    # Backup Model: NVIDIA Nemotron 30B (Reliable)
-    BACKUP_MODEL: str = "nvidia/nemotron-3-nano-30b-a3b:free"
+    # Primary Model: Auto-routed to best available free model
+    AI_MODEL: str = "openrouter/free"
+    # Backup Model: Auto-routed to best available free model
+    BACKUP_MODEL: str = "openrouter/free"
     
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///bot_data.db"
     
     # Bot Configuration
-    MAX_TWEET_LENGTH: int = 280
+    MAX_THREAD_LENGTH: int = 500
+    TELEGRAM_MAX_CAPTION_LENGTH: int = 1024
     MAX_RETRIES: int = 3
     RETRY_DELAY: int = 5
     

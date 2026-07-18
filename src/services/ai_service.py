@@ -22,7 +22,7 @@ class AIService:
             "X-Title": header_title
         }
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=30, max=60))
     async def rewrite_event(self, original_text: str, formatted_date: str, year: Optional[str] = None) -> Tuple[List[str], List[str], Optional[str]]:
         """
         Rewrites the event text using DeepSeek to be viral and suitable for Twitter.
@@ -32,23 +32,20 @@ class AIService:
         
         system_prompt = (
             "Sen profesyonel bir tarihçi ve sosyal medya uzmanısın. Görevin: "
-            "Verilen tarihi olayı Twitter için VİRAL, İLGİ ÇEKİCİ ve DOĞRU bir flood (zincir) haline getirmektir."
+            "Verilen tarihi olayı Threads ve Telegram kanalları için VİRAL, İLGİ ÇEKİCİ ve DOĞRU bir içerik haline getirmektir."
             "\n\nKURALLAR:"
-            "\n- KESİNLİKLE 3 tweetlik bir zincir oluştur."
-            "\n- Her tweet en fazla 220 karakter olsun."
-            "\n- Sadece İlk tweet'te hashtag kullan."
+            "\n- Threads limitleri için 500 karakteri geçmeyen anlamlı bloklar oluştur (--- işareti ile ayır)."
+            "\n- İlk paragrafta vurucu bir giriş yap ve emojiler kullan."
             "\n- Hikaye anlatıcılığı (storytelling) kullan."
+            "\n- ASLA ve ASLA HTML etiketleri (<b>, <i>, <todaydate> vb.) KULLANMA. Sadece temiz düz metin üret."
             "\n\nISTENEN FORMAT:"
             f"\n🕊️ Tarihte Bugün ({formatted_date})"
             "\n[İlgi çekici giriş cümlesi]"
-            "\n#tarih #tarihteneoldu (1/3)"
+            "\n#tarih #tarihteneoldu"
             "\n---"
             "\n[Olayın detayları ve gelişimi]"
-            "\n(2/3)"
             "\n---"
             "\n[Sonuç ve günümüze etkisi] 📚"
-            "\n(3/3)"
-            "\nANKET: [Soru] | [Seçenek 1] | [Seçenek 2]"
             "\nGORSEL_PROMPT: [English Image Prompt]"
         )
 
@@ -97,24 +94,22 @@ class AIService:
     async def rewrite_event_safe(self, original_text: str, formatted_date: str, year: Optional[str] = None):
         """Wrapper ensuring fallback if retries fail."""
         try:
-            return await self.rewrite_event(original_text, formatted_date, year)
+            result = await self.rewrite_event(original_text, formatted_date, year)
+            tweets, poll_options, image_prompt = result
+
+            # Quality Gate: If AI returned text shorter than 100 chars total, reject it
+            total_text = "".join(tweets)
+            if len(total_text) < 100:
+                logger.warning(f"AI output too short ({len(total_text)} chars). Rejecting low-quality content.")
+                return [], [], None
+
+            return result
         except Exception as e:
             logger.critical(f"AI Service Failed after retries: {e}")
-            # Fallback: Split original text BUT WITH THE HEADER and HASHTAGS
-            header = f"🕊️ Tarihte Bugün ({formatted_date})\n\n"
-            footer = "\n\n#tarihteBugün #tarih"
-            
-            # Calculate remaining space
-            available_len = settings.MAX_TWEET_LENGTH - len(header) - len(footer) - 5
-            
-            # Smart split the content
-            parts = smart_split_text(original_text, available_len)
-            
-            # Prepend header and append footer to the first part
-            if parts:
-                parts[0] = header + parts[0] + footer
-                
-            return parts, [], None
+            # DO NOT post raw fallback text — it produces low-quality content
+            # Return empty so main.py skips this cycle gracefully
+            logger.warning("Skipping this cycle to avoid low-quality post.")
+            return [], [], None
 
     def _parse_ai_response(self, content: str, original_text: str):
         """Parses the structured response from AI."""
@@ -143,11 +138,11 @@ class AIService:
             tweets = [content]
             
         # 4. Safety Check (Length)
-        final_tweets = []
-        for tweet in tweets:
-            if len(tweet) > settings.MAX_TWEET_LENGTH - 20:
-                final_tweets.extend(smart_split_text(tweet, settings.MAX_TWEET_LENGTH - 50))
+        final_threads = []
+        for thread_part in tweets:
+            if len(thread_part) > settings.MAX_THREAD_LENGTH - 20:
+                final_threads.extend(smart_split_text(thread_part, settings.MAX_THREAD_LENGTH - 50))
             else:
-                final_tweets.append(tweet)
+                final_threads.append(thread_part)
                 
-        return final_tweets, poll_options, image_prompt
+        return final_threads, poll_options, image_prompt

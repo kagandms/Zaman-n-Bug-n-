@@ -1,0 +1,45 @@
+name: Tarihte Bugün Botu (Schedule)
+
+on:
+  schedule:
+    # Günde 4 kez çalışır: UTC 06:00, 10:00, 14:00, 18:00 (TR saatiyle 09:00, 13:00, 17:00, 21:00)
+    - cron: '0 6,10,14,18 * * *'
+  workflow_dispatch: # İstediğiniz zaman elle çalıştırmanızı sağlayan buton
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Veritabanını geri kaydetmek için gerekli izni verir
+      
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Run Bot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PYTHONPATH: .
+        run: python3 src/main.py
+        
+      - name: Commit and Push Database (bot_data.db)
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add bot_data.db
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: otomatik veritabanı güncellemesi" && git push)

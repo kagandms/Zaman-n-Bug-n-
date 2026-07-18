@@ -9,7 +9,8 @@ from src.data.repository import HistoryRepository
 from src.services.content_service import ContentService
 from src.services.ai_service import AIService
 from src.services.image_service import ImageService
-from src.services.twitter_service import TwitterService
+from src.services.telegram_service import TelegramService
+from src.services.threads_service import ThreadsService
 
 async def main():
     logger.info("🚀 Starting Tarihte Bugün Botu (Elite Edition)")
@@ -21,17 +22,32 @@ async def main():
     content_service = ContentService()
     ai_service = AIService()
     image_service = ImageService()
-    twitter_service = TwitterService()
+    telegram_service = TelegramService()
+    threads_service = ThreadsService()
     
-    # Verify Twitter Creds
-    if not await twitter_service.verify_credentials():
-        logger.critical("Twitter Auth Failed. Exiting.")
+    # Verify Creds
+    tg_ok = await telegram_service.verify_credentials()
+    th_ok = await threads_service.verify_credentials()
+    
+    if not tg_ok or not th_ok:
+        logger.critical("API Authentication Failed. Exiting.")
         sys.exit(1)
 
     async with AsyncSessionLocal() as session:
         repo = HistoryRepository(session)
         
-        # 3. Fetch Event
+        # 3. Daily Post Limit Check
+        MAX_DAILY_POSTS = 3
+        todays_posts = await repo.get_todays_posts()
+        todays_count = len(todays_posts)
+        
+        if todays_count >= MAX_DAILY_POSTS:
+            logger.info(f"📋 Daily limit reached ({todays_count}/{MAX_DAILY_POSTS}). No more posts today.")
+            return
+        
+        logger.info(f"📋 Today's post count: {todays_count}/{MAX_DAILY_POSTS}")
+
+        # 4. Fetch Events
         today = datetime.now()
         logger.info(f"Fetching events for {today.day}.{today.month}...")
         events = await content_service.fetch_events(today.month, today.day)
@@ -40,16 +56,13 @@ async def main():
             logger.error("No events found!")
             return
 
-        # 4. Select Event (Avoid Duplicates)
-        # In a real scenario, we might need to fetch all history to check against local cache efficiently
-        # For now, simplistic check or relying on the repository's exist check inside loop would be better
-        # But `select_best_event` needs a list of used texts.
-        # Let's improve this: Pick a random candidate, check DB, if exists pick another.
-        
+        # 5. Select Event (Avoid ALL Duplicates: today's + all-time)
         selected_event = None
-        local_used_texts = []
-        for _ in range(10): # Try 10 times to find a unique event
-             candidate = content_service.select_best_event(events, local_used_texts)
+        # Start with today's already-posted texts to avoid same-day repeats
+        local_used_texts = list(todays_posts)
+        
+        for _ in range(10):  # Try 10 times to find a unique event
+             candidate = await content_service.select_best_event(events, local_used_texts)
              if not candidate:
                  break
              
@@ -77,7 +90,7 @@ async def main():
         tweets, poll_options, image_prompt = await ai_service.rewrite_event_safe(raw_text, date_str, year)
         
         if not tweets:
-            logger.error("AI service returned empty tweets even after fallback.")
+            logger.warning("⏭️ AI could not produce quality content. Skipping this cycle — no post will be made.")
             return
 
         # 6. Image Handling
@@ -96,49 +109,53 @@ async def main():
         import urllib.parse
         if not image_url and image_prompt:
              logger.info(f"Generating AI Image for: {image_prompt}")
-             safe_prompt = urllib.parse.quote(image_prompt)
-             image_url = f"https://pollinations.ai/p/{safe_prompt}?width=1024&height=1024&model=flux"
+             safe_prompt = urllib.parse.quote(image_prompt[:800])
+             image_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=1024&height=1024&model=flux&nologo=true"
 
         # C. Fallback: Generate Image from Event Text (Panic Mode)
         if not image_url:
             logger.warning("No image found! Generating fallback image from event text.")
-            # Use the first 100 chars of raw text as prompt
-            fallback_prompt = raw_text[:100]
-            safe_fallback = urllib.parse.quote(fallback_prompt)
-            # Using 'flux' model for better text adherence
-            image_url = f"https://pollinations.ai/p/historical%20painting%20of%20{safe_fallback}?width=1024&height=1024&model=flux&seed={random.randint(0, 9999)}"
+            # Use the first 100 chars of raw text as prompt, clean it
+            import re
+            fallback_prompt = re.sub(r'[^a-zA-Z0-9\s]', '', raw_text[:100])
+            safe_fallback = urllib.parse.quote(f"historical painting of {fallback_prompt}")
+            image_url = f"https://image.pollinations.ai/prompt/{safe_fallback}?width=1024&height=1024&model=flux&seed={random.randint(0, 9999)}&nologo=true"
 
+        filename = None
         if image_url:
-            logger.info(f"Downloading image: {image_url}")
+            logger.info(f"Downloading image for Telegram: {image_url}")
             filename = await image_service.download_image(image_url)
-            if filename:
-                media_id = await twitter_service.upload_media(filename)
-                image_service.cleanup(filename)
-                
-        # 6.5 Safety Check for Truncation
-        # Ensure no headers/hashtags push it over limit
-        clean_tweets = []
-        for i, t in enumerate(tweets):
-             # Just strict cutoff if somehow still too long
-             if len(t) > 280:
-                 t = t[:277] + "..."
-             clean_tweets.append(t)
-        tweets = clean_tweets
 
-        # 7. Post to Twitter
-        logger.info("Posting to Twitter...")
-        success = await twitter_service.post_thread(tweets, media_id, poll_options)
+        # 6.5 Safety Check for Truncation
+        clean_threads = []
+        for i, t in enumerate(tweets):
+             if len(t) > settings.MAX_THREAD_LENGTH:
+                 t = t[:settings.MAX_THREAD_LENGTH - 3] + "..."
+             clean_threads.append(t)
+        threads = clean_threads
+
+        # 7. Post to Telegram
+        logger.info("Posting to Telegram...")
+        telegram_text = "\n\n".join(threads)
+        tg_success = await telegram_service.send_post(telegram_text, filename)
         
-        if success:
-            # 8. Save to History
+        # 8. Post to Threads
+        logger.info("Posting to Threads...")
+        th_success = await threads_service.post_thread(threads, image_url)
+        
+        if filename:
+            image_service.cleanup(filename)
+        
+        if tg_success or th_success:
+            # 9. Save to History
             await repo.add_entry(
                 text=raw_text,
                 category=selected_event.get('_category'),
-                tweet_id="UNKNOWN" # We could capture this if post_thread returned IDs
+                tweet_id="TG_TH_POSTED"
             )
             logger.info("✅ Cycle completed successfully.")
         else:
-            logger.error("❌ Failed to post threads.")
+            logger.error("❌ Failed to post to any platform.")
 
 if __name__ == "__main__":
     try:
