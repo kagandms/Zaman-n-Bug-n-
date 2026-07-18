@@ -13,7 +13,7 @@ from src.services.telegram_service import TelegramService
 from src.services.threads_service import ThreadsService
 
 async def main():
-    logger.info("🚀 Starting Tarihte Bugün Botu (Elite Edition)")
+    logger.info("🚀 Starting Zamanın Bugünü (Elite Edition)")
     
     # 1. Initialize DB
     await init_db()

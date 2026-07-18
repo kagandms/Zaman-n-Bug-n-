@@ -1,4 +1,4 @@
-name: Tarihte Bugün Botu (Schedule)
+name: Zamanın Bugünü Botu (Schedule)
 
 on:
   schedule:
