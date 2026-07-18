@@ -4,7 +4,8 @@ on:
   schedule:
     # Günde 4 kez çalışır: UTC 06:00, 10:00, 14:00, 18:00 (TR saatiyle 09:00, 13:00, 17:00, 21:00)
     - cron: '0 6,10,14,18 * * *'
-  workflow_dispatch: # İstediğiniz zaman elle çalıştırmanızı sağlayan buton
+  workflow_dispatch:
+  push:
 
 jobs:
   run-bot:
