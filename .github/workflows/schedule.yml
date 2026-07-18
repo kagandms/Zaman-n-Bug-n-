@@ -43,4 +43,4 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add bot_data.db
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: otomatik veritabanı güncellemesi" && git push)
+          if ! git diff --staged --quiet; then git commit -m "chore: otomatik veritabanı güncellemesi" && git push; fi
