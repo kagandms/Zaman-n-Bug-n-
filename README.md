@@ -1,6 +1,6 @@
-# Tarihte Bugun Botu
+# Zamanın Bugünü – Telegram & Threads Otomasyonu
 
-Production-oriented Python bot that turns "On This Day" events into Turkish X threads, enriches them with AI-generated copy, attaches an image, and posts them as a thread.
+Production-oriented Python bot that turns "On This Day" events into Turkish Telegram channel messages and Threads posts, enriches them with AI-generated copy, attaches an image, and posts them automatically.
 
 ![Sample output 1](docs/assets/bot-sample-output-1.png)
 ![Sample output 2](docs/assets/bot-sample-output-2.png)
@@ -9,15 +9,15 @@ Production-oriented Python bot that turns "On This Day" events into Turkish X th
 
 - fetches events from the Turkish Wikipedia `onthisday` feed
 - prioritizes Turkey-related events before falling back to other notable items
-- rewrites selected events into a short X thread via OpenRouter
+- rewrites selected events into short, engaging posts via OpenRouter AI
 - downloads a Wikipedia image when available, otherwise generates a fallback image URL
-- posts the thread to X and stores posted content in a local database to reduce repeats
+- posts the formatted content to a Telegram Channel and Threads account
+- stores posted content in a local database to reduce repeats
 
 ## Stack
 
 - Python 3.11
-- `httpx` for async HTTP calls
-- `tweepy` for X API integration
+- `httpx` for async HTTP calls and API integrations (Telegram & Threads)
 - `SQLAlchemy` + `aiosqlite` for async persistence
 - `pydantic-settings` for configuration
 - GitHub Actions for scheduled execution
@@ -28,7 +28,7 @@ Production-oriented Python bot that turns "On This Day" events into Turkish X th
 src/
   core/        configuration and logging
   data/        SQLAlchemy models and repository layer
-  services/    content, AI, image, and X integration
+  services/    content, AI, image, Telegram, and Threads integration
   utils/       text processing helpers
 tests/         unit tests
 archive/       deprecated pre-v4 reference scripts
@@ -63,12 +63,11 @@ Set `DRY_RUN=true` in `.env` while validating the end-to-end flow. Switch it to 
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `API_KEY` | yes | X consumer key |
-| `API_SECRET` | yes | X consumer secret |
-| `ACCESS_TOKEN` | yes | X access token |
-| `ACCESS_TOKEN_SECRET` | yes | X access token secret |
+| `TELEGRAM_BOT_TOKEN` | yes | Telegram Bot API token |
+| `TELEGRAM_CHANNEL_ID` | yes | Telegram Channel username/ID (e.g. @your_channel) |
+| `THREADS_ACCESS_TOKEN` | yes | Threads Graph API access token |
+| `THREADS_USER_ID` | yes | Threads account user ID |
 | `OPENROUTER_API_KEY` | yes | OpenRouter API key |
-| `BEARER_TOKEN` | no | optional X v2 bearer token |
 | `DATABASE_URL` | no | defaults to local SQLite |
 | `DRY_RUN` | no | disables posting when `true` |
 
@@ -78,10 +77,10 @@ The scheduled workflow lives at `.github/workflows/daily-bot.yml`.
 
 Required repository secrets:
 
-- `API_KEY`
-- `API_SECRET`
-- `ACCESS_TOKEN`
-- `ACCESS_TOKEN_SECRET`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHANNEL_ID`
+- `THREADS_ACCESS_TOKEN`
+- `THREADS_USER_ID`
 - `OPENROUTER_API_KEY`
 
 ## Operational Notes
