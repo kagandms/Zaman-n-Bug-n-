@@ -133,6 +133,10 @@ async def main():
                  t = t[:settings.MAX_THREAD_LENGTH - 3] + "..."
              clean_threads.append(t)
         threads = clean_threads
+        
+        # 6.7 Append Social Media Footer
+        footer = "Gönderiyi beğenmeyi, paylaşmayı ve takip etmeyi unutmayın\n\nTelegram: https://t.me/zamaninbugunu\nThreads: https://www.threads.com/@zamaninbugunu"
+        threads.append(footer)
 
         # 7. Post to Telegram
         logger.info("Posting to Telegram...")
